@@ -8,7 +8,7 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), not yet started. Blockers cleared, scaffold is next.**
+**Current phase: Phase 1 (vertical slice), in progress. Stage A (toolchain scaffold) is done; tokens and the state machine are next.**
 **Last updated: 2026-08-31.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
@@ -16,7 +16,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Component | Status |
 |---|---|
 | Product spec, design system, engineering contract, agent roster | **Implemented** (this repo's `.md` files) |
-| Project scaffold (React + Vite + TypeScript, GSAP) | **Planned** |
+| Project scaffold (React + Vite + TypeScript, GSAP) | **Implemented** (toolchain only, no UI) |
 | Design tokens (`styles/tokens.css`) | **Planned** |
 | Bench scene: master still + hotspots + hover-glow | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench + onboarding | **Planned** |
@@ -88,6 +88,17 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-08-31 (Stage A)
+
+- Scaffolded the toolchain: React 19.2 + Vite 8.2 + TypeScript 5.9, with GSAP 3.15. No UI, no tokens, no state machine. `App.tsx` renders a labelled placeholder on purpose.
+- The four `npm` scripts now exist exactly as `CLAUDE.md` Section 3 specifies, and `build` runs `typecheck` first.
+- **Verified the gate rather than assuming it.** With a deliberate type error introduced, `npm run typecheck` exits 2 and `npm run build` exits 2 without ever reaching Vite, so typecheck genuinely blocks the build. Reverting returns both to exit 0.
+- **Verified the GSAP plugins named in D4.** `Draggable` and `InertiaPlugin` both resolve from the public `gsap` package with type definitions, and register cleanly. Worth recording because both were historically Club GreenSock only, which would have made D4 unbuildable on the free tier.
+- Declared `<meta name="color-scheme" content="light">` in `index.html`. Without it a visitor whose OS is in dark mode gets the browser's dark UA defaults before any of our CSS loads, which is a dark surface and therefore a defect under Invariant 1.1. The explicit ground still arrives with `base.css` in Stage B.
+- Set Vite's dev and preview port from `PORT`. Vite does not read it on its own, so tooling that assigns a port was being silently ignored and the server landed elsewhere.
+- Pinned TypeScript to 5.9 rather than the current 7.0. TypeScript 7 is the new native compiler and this project's build gate depends on `tsc` being dependable, so that move is worth making deliberately later, not by default now.
+- The `CLAUDE.md` Section 3 KNOWN GAP is unchanged: there is still no automated visual or contrast audit, and typecheck is not a substitute for one.
 
 ### 2026-08-31 (later)
 

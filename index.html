@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!--
+      Invariant 1.1 (CLAUDE.md), blocking: the experience is high-key and there
+      is no dark mode anywhere. Declaring the document light-only stops the
+      browser applying its dark-mode UA defaults for visitors whose OS is set
+      to dark, which would otherwise render a dark surface before any of our
+      own CSS loads.
+    -->
+    <meta name="color-scheme" content="light" />
+    <title>Ethan Tsai: Bench</title>
+    <meta
+      name="description"
+      content="An interactive lab bench: research, publications and patents, a timeline, and AI projects."
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

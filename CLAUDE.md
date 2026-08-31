@@ -55,8 +55,10 @@ Bench-portfolio/
   .gitignore
   .claude/
     agents/                      the eight specialist agent definitions
+    launch.json                  dev-server config for the preview tooling
   index.html
   package.json
+  package-lock.json
   vite.config.ts
   tsconfig.json
   IDEA.md                        the original idea doc, archival and superseded
