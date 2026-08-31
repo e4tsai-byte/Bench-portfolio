@@ -58,11 +58,25 @@ Note the consequence of a high-key ground: because `--accent` must clear 3:1 aga
 
 Translucent white "frost" tiers for consoles and floating cards. Each material is an ambient field plus a specular sheen plus a bright cold edge and a soft shadow. There is no dark material in this project (the bench is never a camera feed, so nothing needs to sit over video).
 
-| Token | Alpha / blur (target) | Role |
+| Token | Value | Role |
 |---|---|---|
-| `--frost-1` | `rgba(255,255,255,0.66)`, blur 20 | Console ground over the blurred bench |
-| `--frost-2` | `rgba(255,255,255,0.80)`, blur 12 | Floating specimen card |
-| `--frost-edge` | cold white 1px inner rim | The bright edge on every frosted surface |
+| `--frost-1` | `rgba(255,255,255,0.66)` | Console ground over the blurred bench |
+| `--frost-1-blur` | `20px` | Backdrop blur for the console tier |
+| `--frost-2` | `rgba(255,255,255,0.80)` | Floating specimen card |
+| `--frost-2-blur` | `12px` | Backdrop blur for the card tier |
+| `--frost-edge-inner` | `rgba(255,255,255,0.78)` | The bright cold rim, inset |
+| `--frost-edge-outer` | `rgba(160,174,192,0.45)` | Cool hairline, `--ink-3` at alpha |
+| `--frost-edge` | composite of the two above | The bright edge on every frosted surface |
+
+The edge is two strokes, not one: a bright inset white rim that reads as specular sheen, plus a cool outer hairline so the surface still has a defined boundary where it sits against a light ground. The outer hairline is `--ink-3` at alpha rather than a new grey, so the edge cannot drift off-palette.
+
+Shadows are a material property, so they are tokens too. They derive from `--ink-0` at low alpha, never from pure black: black shadows on a cool near-white ground read as muddy grey and warm the palette, which Section 2.1 prohibits.
+
+| Token | Value | Role |
+|---|---|---|
+| `--shadow-1` | `0 1px 2px rgba(31,44,58,0.06), 0 2px 6px rgba(31,44,58,0.05)` | Resting card lift |
+| `--shadow-2` | `0 2px 6px rgba(31,44,58,0.07), 0 8px 24px rgba(31,44,58,0.08)` | Floating specimen card |
+| `--shadow-3` | `0 4px 12px rgba(31,44,58,0.09), 0 16px 48px rgba(31,44,58,0.10)` | Console shell |
 
 ### 2.5 The stacking rule
 
@@ -72,10 +86,35 @@ Never stack one light translucent surface directly on another: two frosts in a r
 
 A clean, compact sans-serif for headlines and navigation, paired with a monospace for data points (publication dates, patent numbers, coordinates, timeline years). The monospace is what sells the "research instrument" read. Telemetry-style numerals are always tabular so they do not jitter as they change.
 
-| Token | Use |
-|---|---|
-| `--font-sans` | Headlines, labels, body |
-| `--font-mono` | Dates, IDs, coordinates, metrics |
+| Token | Value | Use |
+|---|---|---|
+| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif` | Headlines, labels, body |
+| `--font-mono` | `ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | Dates, IDs, coordinates, metrics |
+
+**Committed as system stacks**, deliberately and reversibly. They cost no network request and cause no layout shift, which serves the "keep the bundle light" constraint in `PRODUCT.md` Section 6, and the mono stack is ordered to prefer the instrument-grade monospaces that are already installed (`SF Mono` on macOS, `Cascadia Mono` on Windows) before falling back. If the mono ever fails to sell the research-instrument read, swapping in a webfont is a one-line change to this token and nothing else.
+
+**The type scale.** Seven steps on a roughly 1.25 ratio off a 16px base. Desktop-first per Section 6.
+
+| Token | Value | Use |
+|---|---|---|
+| `--text-xs` | `0.75rem` (12px) | HUD flavor, micro-badges |
+| `--text-sm` | `0.875rem` (14px) | Captions, tags, metadata |
+| `--text-base` | `1rem` (16px) | Body |
+| `--text-lg` | `1.25rem` (20px) | Card titles |
+| `--text-xl` | `1.5625rem` (25px) | Panel headings |
+| `--text-2xl` | `1.9375rem` (31px) | Console headings |
+| `--text-3xl` | `2.4375rem` (39px) | Display |
+
+| Token | Value | Use |
+|---|---|---|
+| `--lh-tight` | `1.15` | Display and headings |
+| `--lh-snug` | `1.3` | Card titles, short labels |
+| `--lh-normal` | `1.55` | Body copy |
+| `--lh-mono` | `1.45` | Monospace readouts |
+| `--fw-regular` | `400` | Body |
+| `--fw-medium` | `500` | Labels, active states |
+| `--fw-semibold` | `600` | Headings |
+| `--tracking-wide` | `0.08em` | Small uppercase HUD labels only |
 
 ### 2.7 Motion
 
@@ -86,6 +125,30 @@ Motion is timeline-based (GSAP), not spring-based. Every transition uses fast-in
 | `--dur-fast` | 180ms | `power2.out` |
 | `--dur-move` | 700ms | `power3.out` (the object zoom) |
 | `--dur-settle` | 900ms | `power3.out` (with DoF blur resolve) |
+
+Not every move is a GSAP timeline. Hover glows and focus rings are CSS transitions, so the curves above have CSS equivalents that must match, or the same gesture would ease differently depending on which layer drew it.
+
+| Token | Value | Mirrors |
+|---|---|---|
+| `--ease-out-2` | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | GSAP `power2.out` |
+| `--ease-out-3` | `cubic-bezier(0.215, 0.61, 0.355, 1)` | GSAP `power3.out` |
+
+**The one documented exception to "everything is a token in `tokens.css`."** GSAP ease names are strings like `power3.out` and are not valid CSS, so they cannot live in a stylesheet. They live as one exported constant in `Transition.tsx` until a second consumer exists (the focus-knob and the calendar scrub, both Phase 2), at which point they earn a dedicated motion module. The durations stay in `tokens.css` and are read from there, so a duration is never stated twice.
+
+### 2.8 Spacing
+
+A 4px base grid, eight steps. Chosen to sit cleanly under the radius tiers in Section 8: at a 4px grid, the 8, 18, 24, and 32px radii all land on or between whole steps, so padding and corner never fight each other.
+
+| Token | Value | Typical use |
+|---|---|---|
+| `--sp-1` | `0.25rem` (4px) | Hairline gaps, icon nudges |
+| `--sp-2` | `0.5rem` (8px) | Tag and badge padding |
+| `--sp-3` | `0.75rem` (12px) | Tight stacks |
+| `--sp-4` | `1rem` (16px) | Default gap |
+| `--sp-5` | `1.5rem` (24px) | Card padding |
+| `--sp-6` | `2rem` (32px) | Panel padding |
+| `--sp-7` | `3rem` (48px) | Console padding |
+| `--sp-8` | `4rem` (64px) | Scene-level insets |
 
 ---
 

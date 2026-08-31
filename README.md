@@ -8,7 +8,7 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), in progress. Stage A (toolchain scaffold) is done; tokens and the state machine are next.**
+**Current phase: Phase 1 (vertical slice), in progress. Stages A (toolchain) and B (token layer) are done; the state machine is next.**
 **Last updated: 2026-08-31.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
@@ -17,7 +17,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 |---|---|
 | Product spec, design system, engineering contract, agent roster | **Implemented** (this repo's `.md` files) |
 | Project scaffold (React + Vite + TypeScript, GSAP) | **Implemented** (toolchain only, no UI) |
-| Design tokens (`styles/tokens.css`) | **Planned** |
+| Design tokens (`styles/tokens.css`) | **Implemented** (verified in-browser) |
 | Bench scene: master still + hotspots + hover-glow | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench + onboarding | **Planned** |
 | Crossfade-plus-scale transition (GSAP) | **Planned** |
@@ -88,6 +88,18 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-08-31 (Stage B)
+
+- Built the token layer: `styles/tokens.css`, `base.css`, and `console.css`, wired in `main.tsx` in the fixed, load-bearing order.
+- **Amended `DESIGN.md` before writing any CSS.** Writing the file exposed that the design system could not fully specify it: Invariant 1.6 requires spacing and type values to come from `tokens.css`, but `DESIGN.md` defined no spacing scale and no type scale, and left `--frost-edge` and the promised shadows valueless. Four amendments recorded as D10 to D13. The design system stays the source of truth; the stylesheet did not quietly become it.
+- Committed the font stacks as system stacks (D10), deliberately reversible.
+- Resolved the CSS Modules versus global CSS conflict between `PRODUCT.md` Section 6 and `CLAUDE.md` Section 2 in favour of global CSS, since Section 2's load order is binding.
+- **Verified in a live browser, not asserted.** All 15 ink-on-ground pairs were measured from rendered pixels via `getComputedStyle`, and every tier clears its floor: `--ink-0` 12.62 to 14.19, `--ink-1` 7.32 to 8.24, `--ink-2` 4.70 to 5.29, `--accent-deep` 5.66 to 6.37. Measured values match the derivation exactly. A sweep of every element confirmed no dark surface anywhere (Invariant 1.1).
+- The focus ring was verified by pressing Tab, not by reading the CSS. Two earlier readings were discarded as meaningless: `getComputedStyle` on an unfocused button returns the default outline, and a programmatic `.focus()` does not trigger `:focus-visible`. Under real keyboard focus the ring resolves to `rgb(27, 151, 127)`, exactly `--accent`, at 3px with a 2px offset.
+- Audited Invariant 1.6 mechanically: no raw hex outside `tokens.css`, no hex or raw px in any component, no emoji in chrome.
+- This satisfies the `CLAUDE.md` Section 3 requirement for a live-browser check on any change to `tokens.css` or a console surface. The KNOWN GAP itself is unchanged: the check was manual, and `tools/audit.mjs` still does not exist.
+- `App.tsx` currently renders a temporary token-proof surface so the above could be measured. It is labelled as temporary and Stage C deletes it.
 
 ### 2026-08-31 (Stage A)
 

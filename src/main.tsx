@@ -2,9 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 
-// Stylesheet imports are deliberately absent until Stage B. When they land,
-// the order is fixed and load-bearing (CLAUDE.md section 2):
-// tokens.css, then base.css, then console.css.
+// The order below is fixed and load-bearing (CLAUDE.md section 2). Tokens must
+// exist before anything references them, so tokens.css always loads first.
+import './styles/tokens.css'
+import './styles/base.css'
+import './styles/console.css'
 
 const root = document.getElementById('root')
 if (!root) {

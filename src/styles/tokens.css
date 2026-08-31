@@ -1,0 +1,118 @@
+/**
+ * tokens.css
+ *
+ * The single source of every design value in this project (CLAUDE.md
+ * Invariant 1.6). Values here are transcribed from DESIGN.md Section 2 and
+ * Section 8. Nothing is invented at this layer: if a value is needed and
+ * DESIGN.md does not state it, amend DESIGN.md first.
+ *
+ * This file DEFINES. It styles nothing. It must load before base.css and
+ * console.css, which reference it (CLAUDE.md Section 2).
+ *
+ * There is no dark-mode block in this file, and there must never be one.
+ * The experience is high-key by law (Invariant 1.1, blocking).
+ */
+
+:root {
+  color-scheme: light;
+
+  /* --- Grounds (DESIGN.md 2.1) -------------------------------------- */
+  /* Cool near-whites. Warm neutrals are prohibited: they break the
+     clinical read. --ground-1 is the darkest, so it is the worst case
+     for ink contrast and the one every tier is measured against. */
+  --ground-0: #f4f7fa;
+  --ground-1: #eef2f6;
+  --ground-2: #ffffff;
+
+  /* --- Ink (DESIGN.md 2.2) ------------------------------------------ */
+  /* One cool blue-grey family, hue 213, saturation dropping as the tier
+     lightens. Measured ratios against --ground-1 in comments. Do not
+     lighten these for elegance. */
+  --ink-0: #1f2c3a; /* 12.62:1, floor 12:1  */
+  --ink-1: #405064; /*  7.32:1, floor  7:1  */
+  --ink-2: #5d6d81; /*  4.70:1, floor  4.5:1 */
+  --ink-3: #a0aec0; /*  2.00:1, non-text     */
+
+  /* --- Accent (DESIGN.md 2.3) --------------------------------------- */
+  /* Cold mint, hue 168. A single accent hue: never add a second without
+     retiring this one. It marks active and interactive state only. */
+  --accent: #1b977f;      /* 3.23:1, floor 3:1 non-text  */
+  --accent-deep: #196b5b; /* 5.66:1, floor 4.5:1 text    */
+
+  /* --- Materials (DESIGN.md 2.4) ------------------------------------ */
+  --frost-1: rgba(255, 255, 255, 0.66);
+  --frost-1-blur: 20px;
+  --frost-2: rgba(255, 255, 255, 0.8);
+  --frost-2-blur: 12px;
+
+  /* Two strokes, not one: bright inset rim reads as specular sheen, cool
+     outer hairline gives the surface a boundary on a light ground. The
+     outer value is --ink-3 at alpha so the edge cannot drift off-palette. */
+  --frost-edge-inner: rgba(255, 255, 255, 0.78);
+  --frost-edge-outer: rgba(160, 174, 192, 0.45);
+  --frost-edge: inset 0 0 0 1px var(--frost-edge-inner),
+    0 0 0 1px var(--frost-edge-outer);
+
+  /* Derived from --ink-0 at low alpha, never pure black: black shadows on
+     a cool near-white ground read muddy and warm the palette. */
+  --shadow-1: 0 1px 2px rgba(31, 44, 58, 0.06), 0 2px 6px rgba(31, 44, 58, 0.05);
+  --shadow-2: 0 2px 6px rgba(31, 44, 58, 0.07), 0 8px 24px rgba(31, 44, 58, 0.08);
+  --shadow-3: 0 4px 12px rgba(31, 44, 58, 0.09), 0 16px 48px rgba(31, 44, 58, 0.1);
+
+  /* --- Type (DESIGN.md 2.6) ----------------------------------------- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono",
+    "Roboto Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.9375rem;
+  --text-3xl: 2.4375rem;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.55;
+  --lh-mono: 1.45;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  --tracking-wide: 0.08em;
+
+  /* --- Spacing (DESIGN.md 2.8) -------------------------------------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  /* --- Radii (DESIGN.md 8) ------------------------------------------ */
+  /* Concentric: a card inside a panel steps down one tier, so nested
+     surfaces never share an edge radius. */
+  --r-2xl: 32px;
+  --r-xl: 24px;
+  --r-lg: 18px;
+  --r-sm: 8px;
+
+  /* --- Motion (DESIGN.md 2.7) --------------------------------------- */
+  /* GSAP ease STRINGS are not valid CSS and live in Transition.tsx. These
+     cubic-beziers mirror them so a CSS hover eases identically to a GSAP
+     timeline. No overshoot, deliberately: instruments do not wobble. */
+  --dur-fast: 180ms;
+  --dur-move: 700ms;
+  --dur-settle: 900ms;
+  --ease-out-2: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-3: cubic-bezier(0.215, 0.61, 0.355, 1);
+
+  /* --- Focus (DESIGN.md 3, items 3 and 5) --------------------------- */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+}

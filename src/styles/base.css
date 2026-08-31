@@ -1,0 +1,117 @@
+/**
+ * base.css
+ *
+ * Reset plus the ground. Loads after tokens.css and before console.css
+ * (CLAUDE.md Section 2). Every value here is a token: no raw hex, no raw px
+ * outside of hairlines that have no token (Invariant 1.6).
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/**
+ * The ground is painted EXPLICITLY, on purpose.
+ *
+ * A transparent canvas inherits whatever the host paints behind it, which is
+ * exactly how a dark surface gets in without anyone choosing it: a visitor
+ * whose OS is in dark mode gets the browser's dark defaults. That is a defect
+ * under Invariant 1.1 (blocking), not a preference. index.html declares
+ * color-scheme light for the same reason, before any CSS has loaded.
+ */
+body {
+  min-height: 100vh;
+  background-color: var(--ground-0);
+  color: var(--ink-0);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+
+p {
+  text-wrap: pretty;
+}
+
+/* Telemetry numerals are always tabular so readouts do not jitter as they
+   change (DESIGN.md 2.6). */
+code,
+kbd,
+samp,
+pre,
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--lh-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/**
+ * Focus ring (DESIGN.md 3, items 3 and 5).
+ *
+ * Cold rim, always visible, never signalled by hue alone: the ring carries a
+ * width and an offset as well as the accent, so it survives colour-blindness
+ * and prefers-contrast.
+ */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--accent);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/**
+ * Reduced motion (CLAUDE.md Invariant 1.8).
+ *
+ * The global guard. It cuts CSS animation to effectively nothing rather than
+ * to zero, because a true 0s duration can suppress transitionend events that
+ * logic may depend on. GSAP timelines take the separate cut-to-destination
+ * path in Transition.tsx; this rule does not reach them.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

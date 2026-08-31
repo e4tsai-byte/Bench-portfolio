@@ -1,0 +1,87 @@
+/**
+ * console.css
+ *
+ * The frosted console and card surfaces. Loads last (CLAUDE.md Section 2).
+ *
+ * THE STACKING RULE (DESIGN.md 2.5), stated here because this is the file
+ * where it gets broken: never stack one frosted surface directly on another.
+ * Two frosts in a row turn to milk and lose their edges. A .card sits on the
+ * blurred bench render or on an opaque ground, NEVER inside a .console.
+ * If you need a card inside a console, give the console an opaque panel and
+ * put the card on that.
+ */
+
+/* Console shell: the luminous white surface a focused state lives in. Sits
+   over the blurred bench render, which is the only thing it may sit on. */
+.console {
+  background-color: var(--frost-1);
+  backdrop-filter: blur(var(--frost-1-blur));
+  -webkit-backdrop-filter: blur(var(--frost-1-blur));
+  border-radius: var(--r-2xl);
+  padding: var(--sp-7);
+  box-shadow: var(--frost-edge), var(--shadow-3);
+}
+
+/* Opaque panel inside a console. Exists specifically so a card has somewhere
+   legal to sit: it is the surface that breaks the frost-on-frost chain.
+   Steps down one radius tier from the shell so nested edges stay concentric
+   (DESIGN.md 8). */
+.panel {
+  background-color: var(--ground-1);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+}
+
+/* Floating specimen card. One research item. Steps down another radius tier. */
+.card {
+  background-color: var(--frost-2);
+  backdrop-filter: blur(var(--frost-2-blur));
+  -webkit-backdrop-filter: blur(var(--frost-2-blur));
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--frost-edge), var(--shadow-2);
+  transition: box-shadow var(--dur-fast) var(--ease-out-2),
+    transform var(--dur-fast) var(--ease-out-2);
+}
+
+/* Hover is a rim-light and a lift, not a hue swap: interactive state is never
+   signalled by the accent alone (DESIGN.md 3, item 5). "Glow" means brighter
+   and whiter with a cold rim, never a neon emission (DESIGN.md 1). */
+.card:hover {
+  box-shadow: var(--frost-edge), var(--shadow-3);
+  transform: translateY(calc(var(--sp-1) * -0.5));
+}
+
+/* Card on an opaque ground rather than over the bench. Same geometry, no
+   backdrop blur, because there is nothing behind it worth blurring. */
+.card--opaque {
+  background-color: var(--ground-2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Small uppercase HUD label. Monospace, tertiary ink, non-interactive flavor
+   that makes the console read as scientific equipment (DESIGN.md 4.6). */
+.hud-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--lh-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* Typographic micro-badge, built from tokens. Never an emoji (DESIGN.md 7). */
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--lh-mono);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background-color: var(--ground-1);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+}
