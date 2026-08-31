@@ -10,7 +10,7 @@ A raw hex or px value living in a component is also a defect. Everything is a to
 
 The bench is a pristine, near-monochrome lab in cool blues and sterile whites. Objects are sharp, precise, and slightly alien, like specimens under glass. The reason the ground stays luminous rather than dark is not fashion, it is legibility and mood: contrast comes from near-black ink on luminous white, never from inverting the ground. "Glow" means an element becomes brighter and whiter with a cold rim-light, never a neon emission against black.
 
-The original idea doc borrows several references that describe dark "command center" aesthetics for the microscope and calendar. Those are reinterpreted, not implemented: every dark reference becomes its inverted high-key equivalent (a luminous white console with cold rim-light and a single cool accent). The doc itself instructs this in its Theme paragraph, and this file makes it binding.
+The original idea doc (`IDEA.md`, archival) borrows several references that describe dark "command center" aesthetics for the microscope and calendar. Those are reinterpreted, not implemented: every dark reference becomes its inverted high-key equivalent (a luminous white console with cold rim-light and a single cool accent). The doc itself instructs this in its Theme paragraph, and this file makes it binding.
 
 ---
 
@@ -32,23 +32,27 @@ Three cool near-whites, deliberately not cream, sand, or parchment. Warm neutral
 
 Four ink tiers with verified contrast against the grounds. Do not lighten ink for elegance: light grey text on a tinted near-white is the single most common reason an interface becomes hard to read.
 
-| Token | Role | Min contrast |
-|---|---|---|
-| `--ink-0` | Primary text, data readouts | 12:1 |
-| `--ink-1` | Secondary text, labels | 7:1 |
-| `--ink-2` | Tertiary, captions, HUD flavor | 4.5:1 |
-| `--ink-3` | Hairlines, dividers | non-text |
+| Token | Value | Role | Min contrast | Measured (worst ground) |
+|---|---|---|---|---|
+| `--ink-0` | `#1f2c3a` | Primary text, data readouts | 12:1 | 12.62:1 |
+| `--ink-1` | `#405064` | Secondary text, labels | 7:1 | 7.32:1 |
+| `--ink-2` | `#5d6d81` | Tertiary, captions, HUD flavor | 4.5:1 | 4.70:1 |
+| `--ink-3` | `#a0aec0` | Hairlines, dividers | non-text | 2.00:1 |
+
+All four are one cool blue-grey family (hue 213), with saturation dropping as the tier lightens so the pale tiers stay cool without reading as blue. "Measured (worst ground)" is the ratio against `--ground-1` (`#eef2f6`), the darkest of the three grounds and therefore the worst case for dark ink. Every tier is verified against all three grounds, not just one. These are flat-swatch measurements: Section 3 still requires verifying against the actual blurred-bench composite once the render exists.
 
 ### 2.3 Accent
 
 A single cool accent, in two tiers. Never introduce a second accent hue without retiring this one. The accent marks active and interactive state only, never decoration.
 
-| Token | Role |
-|---|---|
-| `--accent` | Graphical use: glow rims, active hotspot, focus marker |
-| `--accent-deep` | Text-safe use: accent text and small icons on light ground |
+| Token | Value | Role | Floor | Measured (worst ground) |
+|---|---|---|---|---|
+| `--accent` | `#1b977f` | Graphical use: glow rims, active hotspot, focus marker | 3:1 non-text | 3.23:1 |
+| `--accent-deep` | `#196b5b` | Text-safe use: accent text and small icons on light ground | 4.5:1 | 5.66:1 |
 
-Choose the hue once (mint or violet) and commit. Default recommendation: cold mint. It reads as instrument light against cool white without warming the palette.
+**The hue is committed: cold mint, hue 168, cyan-leaning so it never warms toward yellow-green.** It reads as instrument light against cool white without warming the palette. Recorded as D9 in `CLAUDE.md` Section 7; changing it requires retiring this accent, not adding a second one.
+
+Note the consequence of a high-key ground: because `--accent` must clear 3:1 against a near-white ground to serve as the focus ring (Section 3, items 3 and 5), it lands as a deep instrument teal rather than a pale mint. The pale, bright quality of a "glow" comes from white per Section 1, with the accent as the cold tint at its rim, not from the accent being light itself.
 
 ### 2.4 Materials
 

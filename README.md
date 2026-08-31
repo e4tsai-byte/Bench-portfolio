@@ -8,7 +8,7 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice) — not yet started.**
+**Current phase: Phase 1 (vertical slice), not yet started. Blockers cleared, scaffold is next.**
 **Last updated: 2026-08-31.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
@@ -71,6 +71,7 @@ npm run preview     # serve the production build
 | [DESIGN.md](DESIGN.md) | The visual law (high-key), the token system, and every component's rationale |
 | [CLAUDE.md](CLAUDE.md) | Engineering invariants: the contract the code holds itself to, plus the decision record |
 | [AGENTS.md](AGENTS.md) | The specialist-review roster used to develop this project |
+| [IDEA.md](IDEA.md) | The original idea doc. Archival and superseded: read it for history, never implement from it |
 
 ## Scope and honest limitations
 
@@ -87,6 +88,17 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-08-31 (later)
+
+- Cleared the two blockers standing in front of Phase 1. No application code yet; the status table above is unchanged and still correct.
+- **Runtime.** Node was not installed on the development machine, so the mandatory `npm run typecheck` gate could not run at all. Installed Node v26.8.1 / npm 11.19.0. Recorded as D8 in `CLAUDE.md` Section 7, which also closes the package-manager gap left open by D4.
+- **Palette.** Committed the accent hue (cold mint, hue 168) and derived the full ink and accent hex values against the contrast floors in `DESIGN.md` Section 2.2, verified against all three grounds rather than chosen by eye. Values and measured ratios now recorded in `DESIGN.md` Sections 2.2 and 2.3, decision recorded as D9. These are flat-swatch numbers and do not discharge the requirement to re-verify against the blurred-bench composite once that render exists.
+- Fixed structural drift in the `CLAUDE.md` Section 2 tree, which did not list `.claude/agents/` or `.gitignore`.
+- Added the original idea doc to the repo as `IDEA.md` (renamed from `3D personal profolio idea.md`, correcting the filename typo), with its text preserved verbatim under an archival header that maps each of its six contradictions to the governing decision that resolved it. It is history, not a spec.
+- **Corrected a false claim in `PRODUCT.md` Section 10.** That section stated the PDAC/Schwann-cell abstract was available in the owner's idea doc. It is not: `IDEA.md` is a design and UX plan and contains no portfolio content at all. The research content is still not in this repo.
+- Added `.gitignore`, which the `CLAUDE.md` Section 2 tree listed but which did not exist.
+- Still blocked on the owner: the research content itself (abstract, publication list, patent numbers) has no source in this repo, so `content/research.ts` cannot be populated with anything verified. The type-family tokens (`--font-sans`, `--font-mono`) are also still unset.
 
 ### 2026-08-31
 

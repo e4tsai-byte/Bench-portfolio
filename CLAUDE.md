@@ -52,10 +52,14 @@ Declarative. Files not listed here do not exist yet; adding an unlisted file wit
 
 ```
 Bench-portfolio/
+  .gitignore
+  .claude/
+    agents/                      the eight specialist agent definitions
   index.html
   package.json
   vite.config.ts
   tsconfig.json
+  IDEA.md                        the original idea doc, archival and superseded
   PRODUCT.md                     what it is, why, and the phase plan
   DESIGN.md                      the visual law and token system
   CLAUDE.md                      this contract
@@ -144,11 +148,18 @@ The project scope was pressure-tested with the grill-me skill before any code. T
 
 - **D1. Purpose.** A personal playground built to the owner's taste. The resume carries the recruiter load, so the experience does not optimize for fast skimmers and needs no "skip to substance" path.
 - **D2. Fidelity.** Not photorealistic real-time 3D. Pre-baked stylized stills plus 2D faked transitions (Invariant 1.2). The word "photorealistic" is retired from the goal.
-- **D3. Palette.** High-key only, no dark mode, resolving the contradiction in the idea doc (Invariant 1.1). All "midnight/command-center" references reinterpret to luminous white consoles.
+- **D3. Palette.** High-key only, no dark mode, resolving the contradiction in the idea doc (`IDEA.md`, Invariant 1.1). All "midnight/command-center" references reinterpret to luminous white consoles.
 - **D4. Stack.** React + Vite + TypeScript, with GSAP (plus Draggable and InertiaPlugin) as the motion layer, chosen over Framer Motion because the design leans on timeline choreography and scrub interactions (the focus-knob, the calendar scrub).
 - **D5. Assets.** The owner builds the Spline scene and exports the stills; the interaction layer is built against matching-filename placeholders in the meantime (Invariant 1.3).
 - **D6. Transitions.** Crossfade plus scale is the Phase 1 default (easiest to implement); a pre-rendered clip for the hero microscope move is a later, optional upgrade only if the 2D zoom feels flat when viewed live.
 - **D7. Scope.** Phase 1 is the full bench render plus the microscope wired end to end plus deployed live; the other three objects glow and show "coming soon" (Invariant 1.7). Mobile and sound are out of Phase 1.
+
+### 2026-08-31: Phase 1 unblocking decisions
+
+Two blockers were resolved before any code was scaffolded, because both would have caused rework across the whole surface if guessed at.
+
+- **D8. Runtime.** Node (installed 2026-08-31 via Homebrew; v26.8.1 / npm 11.19.0) is the committed runtime and npm is the committed package manager, closing the gap left by D4. The machine previously had only bun, which meant the mandatory `npm run typecheck` gate in Section 3 could not run at all. npm keeps `README.md`, Section 3 here, and `PRODUCT.md` Section 6 true as written and matches Vercel's default zero-config build. bun remains fine for ad-hoc local use; it is not the documented contract. **Open:** confirm Vercel's supported Node version at first deploy and pin it, since v26 is newer than the typical hosted default.
+- **D9. Palette values.** The accent hue is **cold mint** (hue 168), per the default recommended in `DESIGN.md` Section 2.3. The full ink and accent hex values were derived by binary-searching lightness to the contrast floors in `DESIGN.md` Section 2.2 rather than chosen by eye, and each is verified against all three grounds with the darkest ground (`--ground-1`) as the worst case. Values and measured ratios are now recorded in `DESIGN.md` Sections 2.2 and 2.3. These are flat-swatch measurements and do not discharge the Section 3 requirement to re-verify against the blurred-bench composite once that render exists.
 
 ### Open questions (settle by looking, not by planning)
 

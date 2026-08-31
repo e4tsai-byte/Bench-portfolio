@@ -23,7 +23,7 @@ This is a **personal playground built to the owner's taste**, not a lead-convers
 - Ship something live and complete-looking fast, then extend.
 
 **Non-goals (explicit)**
-- NOT real-time photorealistic 3D. The word "photorealistic" from the original idea doc is retired. Target is pre-baked stylized 3D imagery.
+- NOT real-time photorealistic 3D. The word "photorealistic" from the original idea doc (`IDEA.md`) is retired. Target is pre-baked stylized 3D imagery.
 - NOT mobile-first. Phase 1 is desktop only (see Section 11).
 - NOT a CMS-backed or server-rendered app. It is a static single-page build.
 - NOT dark mode. See the palette law below.
@@ -35,7 +35,7 @@ One rule overrides all borrowed references: **the experience is high-key. There 
 - Palette: cool blues and sterile whites. Near-black ink on luminous white for contrast. Objects feel clinical, precise, slightly alien, like specimens under glass.
 - "Glow" means an element becomes brighter and whiter with a cold rim-light, never a neon emission against black.
 - Sub-interfaces (the microscope console, and later the notebook/calendar/computer views) are **luminous-white consoles** with cold rim-light and a **single cool accent** (mint or violet) for active states.
-- The original idea doc contains contradictory "Midnight Command Center," "near-black background," and "dark-mode modal" language for the microscope and calendar. **All such references are reinterpreted to their high-key, inverted equivalent.** Do not implement any dark surface.
+- The original idea doc (`IDEA.md`) contains contradictory "Midnight Command Center," "near-black background," and "dark-mode modal" language for the microscope and calendar. **All such references are reinterpreted to their high-key, inverted equivalent.** Do not implement any dark surface.
 
 ## 5. Fidelity and asset strategy
 
@@ -173,7 +173,9 @@ export interface AiProject {
 }
 ```
 
-Phase 1 research content includes the PDAC/Schwann-cell whole-organ 3D histology work (abstract available in the owner's idea doc) plus the owner's other research items as additional specimen cards.
+Phase 1 research content includes the PDAC/Schwann-cell whole-organ 3D histology work plus the owner's other research items as additional specimen cards.
+
+**Correction (2026-08-31):** an earlier version of this section stated the abstract was available in the owner's idea doc. That is not true. `IDEA.md` is a design and UX plan and carries no portfolio content: no abstract, no publication list, no patent numbers. The research content is not anywhere in this repo yet. The owner must supply it before `research.ts` can hold anything verified, and until then the microscope console has no true content to render (Invariant 1.5, content-steward blocking).
 
 ## 11. Phasing and acceptance criteria
 
