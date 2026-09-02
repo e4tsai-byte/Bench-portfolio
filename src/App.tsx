@@ -1,73 +1,113 @@
 /**
- * TEMPORARY: Stage B token proof.
+ * App.tsx
  *
- * This exists to be looked at and measured, not to be shipped. DESIGN.md
- * Section 3 item 1 requires contrast to be verified in a live browser against
- * the real composite rather than asserted from hex values, and this surface is
- * what makes that possible before any scene art exists.
+ * Mounts the state machine (CLAUDE.md Section 2). It holds no content and no
+ * art: it decides which scene is on screen and guarantees the way out.
  *
- * Stage C deletes this entirely and mounts the state machine here instead.
+ * The per-state bodies below are Stage C placeholders. Stage D replaces them
+ * with scenes/Bench.tsx and scenes/Microscope.tsx. What is NOT a placeholder
+ * is the machine, the hash sync, and the Back-to-Bench guarantee.
  */
-
-const INKS = ['--ink-0', '--ink-1', '--ink-2', '--ink-3'] as const
-const GROUNDS = ['--ground-0', '--ground-1', '--ground-2'] as const
+import { useEffect, useRef } from 'react'
+import BackToBench from './components/BackToBench'
+import {
+  BENCH_OBJECTS,
+  OBJECT_LABEL,
+  isWiredThisPhase,
+  useBenchMachine,
+  type BenchObject,
+} from './state/benchMachine'
 
 export default function App() {
+  const { state, enter, backToBench } = useBenchMachine()
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const isFirstRender = useRef(true)
+
+  // With no router, nothing announces a navigation, so a screen reader or
+  // keyboard user would be left where they were while the page changed under
+  // them. Move focus to the new scene's heading on transition, but not on
+  // first paint, which would steal focus from a fresh page load.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    headingRef.current?.focus()
+  }, [state])
+
+  const isBench = state === 'BENCH'
+
   return (
-    <main style={{ padding: 'var(--sp-8)' }} data-token-proof="stage-b">
-      <p className="hud-label">Stage B / token proof / temporary</p>
-      <h1>Bench Portfolio</h1>
+    <main className="scene">
+      {/* Invariant 1.4: present in every non-BENCH state, without exception. */}
+      {!isBench && <BackToBench onClick={backToBench} />}
 
-      <section style={{ marginTop: 'var(--sp-6)' }}>
-        {GROUNDS.map((ground) => (
-          <div
-            key={ground}
-            data-ground={ground}
-            style={{
-              background: `var(${ground})`,
-              padding: 'var(--sp-5)',
-              borderRadius: 'var(--r-lg)',
-              marginBottom: 'var(--sp-3)',
-            }}
-          >
-            <p className="hud-label">{ground}</p>
-            {INKS.map((ink) => (
-              <p
-                key={ink}
-                data-ink={ink}
-                data-on={ground}
-                style={{ color: `var(${ink})` }}
-              >
-                {ink} on {ground}: the quick brown fox jumps over the lazy dog 0123456789
-              </p>
-            ))}
-            <p data-ink="--accent-deep" data-on={ground} style={{ color: 'var(--accent-deep)' }}>
-              --accent-deep on {ground}: text-safe accent tier
-            </p>
-          </div>
-        ))}
-      </section>
+      <h1 className="scene__heading" ref={headingRef} tabIndex={-1}>
+        {isBench ? 'The bench' : OBJECT_LABEL[state]}
+      </h1>
 
-      <section className="console" style={{ marginTop: 'var(--sp-6)' }}>
-        <p className="hud-label">console / frost-1</p>
-        <h2>Console shell</h2>
-        <div className="panel" style={{ marginTop: 'var(--sp-5)' }}>
-          <p className="hud-label">panel / opaque, breaks the frost chain</p>
-          <div className="card card--opaque" style={{ marginTop: 'var(--sp-4)' }}>
-            <span className="tag">Biotech</span>
-            <h3 style={{ marginTop: 'var(--sp-3)' }}>Specimen card</h3>
-            <p style={{ color: 'var(--ink-1)' }}>
-              A card sits on an opaque ground, never on another frosted surface.
-            </p>
-            <p className="mono" style={{ color: 'var(--ink-2)' }}>
-              X:0412 Y:0887 / 2024 TO PRESENT
-            </p>
-          </div>
-        </div>
-        <button type="button" style={{ marginTop: 'var(--sp-5)' }}>
-          Focusable control, tab to it to see the ring
-        </button>
-      </section>
+      {isBench ? (
+        <BenchPlaceholder onEnter={enter} />
+      ) : (
+        <ObjectPlaceholder object={state} />
+      )}
+
+      <p className="hud-label">Stage C / state machine spine / no art yet</p>
     </main>
+  )
+}
+
+/**
+ * Stands in for scenes/Bench.tsx. The hotspots are plain buttons here because
+ * there is no master still to position them over yet; Stage D turns them into
+ * positioned Hotspot components over the render.
+ *
+ * Phase discipline (Invariant 1.7) is already enforced: an object that is not
+ * wired this phase does not navigate. It shows the plaque instead.
+ */
+function BenchPlaceholder({ onEnter }: { onEnter: (object: BenchObject) => void }) {
+  return (
+    <ul className="bench-objects">
+      {BENCH_OBJECTS.map((object) => {
+        const wired = isWiredThisPhase(object)
+        return (
+          <li key={object}>
+            {wired ? (
+              <button type="button" className="card" onClick={() => onEnter(object)}>
+                <h2>{OBJECT_LABEL[object]}</h2>
+                <p style={{ color: 'var(--ink-1)' }}>Wired this phase. Enter.</p>
+              </button>
+            ) : (
+              <div className="card card--opaque">
+                <h2>{OBJECT_LABEL[object]}</h2>
+                <p className="plaque">Coming soon</p>
+              </div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function ObjectPlaceholder({ object }: { object: BenchObject }) {
+  return (
+    <section className="console">
+      <p className="hud-label">{`state / ${object.toLowerCase()}`}</p>
+      {isWiredThisPhase(object) ? (
+        <p>
+          This state is wired this phase. Stage D builds the console that belongs
+          here.
+        </p>
+      ) : (
+        <>
+          <p className="plaque">Not built yet</p>
+          <p style={{ color: 'var(--ink-1)', marginTop: 'var(--sp-4)' }}>
+            Reachable and exitable so no state is dead (Invariant 1.4), but not
+            wired to a view until its phase (Invariant 1.7).
+          </p>
+        </>
+      )}
+    </section>
   )
 }

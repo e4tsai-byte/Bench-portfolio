@@ -8,7 +8,7 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), in progress. Stages A (toolchain) and B (token layer) are done; the state machine is next.**
+**Current phase: Phase 1 (vertical slice), in progress. Stages A (toolchain), B (token layer), and C (state machine) are done; scenes and art are next.**
 **Last updated: 2026-08-31.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
@@ -19,7 +19,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Project scaffold (React + Vite + TypeScript, GSAP) | **Implemented** (toolchain only, no UI) |
 | Design tokens (`styles/tokens.css`) | **Implemented** (verified in-browser) |
 | Bench scene: master still + hotspots + hover-glow | **Planned** |
-| State machine + `#hash` deep links + Back-to-Bench + onboarding | **Planned** |
+| State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Crossfade-plus-scale transition (GSAP) | **Planned** |
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
 | Research content (`content/research.ts`) | **Planned** |
@@ -88,6 +88,17 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-08-31 (Stage C)
+
+- Built the navigation spine: `state/benchMachine.ts` and `components/BackToBench.tsx`, with `App.tsx` mounting the machine. No router, per Invariant 1.4. No art and no content: the per-state bodies are labelled placeholders that Stage D replaces.
+- **Arbitrated a genuine conflict between two invariants** (D14). 1.4 says no state may be unreachable; 1.7 says three of the five are not wired until Phase 2. Resolved by separating reachability from bench-wiring: all five states are reachable by hash and exitable, while the three Phase 2 objects do not navigate from the bench and render the "coming soon" plaque instead. Phase membership lives in one map so Phase 2 is a one-line promotion.
+- **Found and fixed a real bug by looking.** Hash normalisation was written as a mount-only effect, which silently does nothing on a same-document navigation: changing only the hash does not remount React, so an unknown hash arriving from an edited address bar, a stale link, or back/forward would set state correctly but leave the address bar claiming a state the app was not in. One handler now owns the URL for load, popstate, and hashchange alike. It also canonicalises case, so `#MICROSCOPE` becomes `#microscope`.
+- Verified in the browser rather than asserted: all five states reachable by deep link, all four non-bench states carry Back-to-Bench, unknown hashes normalise on both cold load and same-document change, Back-to-Bench returns and clears the hash, and the browser back and forward buttons walk the states correctly.
+- Phase discipline is enforced in the DOM, not just visually: the bench renders exactly one interactive control (the microscope). The three Phase 2 objects are non-interactive elements, so they cannot be tabbed to or clicked into a view that does not exist.
+- Focus moves to the new scene heading on transition. With no router nothing otherwise announces a navigation, which would leave a keyboard or screen reader user stranded while the page changed under them. It is suppressed on first paint so a fresh load does not have focus stolen.
+- Audits clean: no hex or raw px in any component, no hex outside `tokens.css`, no undeclared files against the `CLAUDE.md` Section 2 tree, and a sweep of every element in both bench and object states found no dark surface.
+- **Known cosmetic issue, deferred:** the fixed-position Back-to-Bench control sits close enough to the placeholder scene heading to crowd it. The real layout arrives with the bench render in Stage D, so polishing the placeholder now would be wasted work.
 
 ### 2026-08-31 (Stage B)
 

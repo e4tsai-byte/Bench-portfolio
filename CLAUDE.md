@@ -174,6 +174,10 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 
 **Styling approach.** Plain global CSS with the three declared stylesheets, not CSS Modules, resolving the conflict between `PRODUCT.md` Section 6 ("CSS Modules or a lightweight styling approach") and this file's Section 2, whose fixed load order is described as load-bearing. Section 2 wins because it is the binding declarative tree.
 
+### 2026-08-31: Stage C, arbitration between Invariants 1.4 and 1.7
+
+- **D14. Reachability versus wiring.** Invariant 1.4 names all five states and says none may be unreachable or unexitable. Invariant 1.7 says the three Phase 2 objects are "not wired to a view" until their phase. Taken literally together they conflict: a state nothing can enter is unreachable. Resolved by separating two senses of "reachable". **All five states are reachable by `#hash` and every one is exitable**, so 1.4 holds and no dead state hides in the type. What Phase 1 withholds is the wiring **from the bench**: a Phase 2 hotspot does not navigate, and a Phase 2 state renders the "coming soon" plaque rather than a content view. That is 1.7 as written, not a workaround. Phase membership is encoded once, in `OBJECT_PHASE` in `benchMachine.ts`, so promoting an object in Phase 2 is a one-line change rather than a hunt through scene files.
+
 ### Open questions (settle by looking, not by planning)
 
 1. Whether the crossfade-plus-scale zoom feels convincing, or the hero microscope move needs a pre-rendered clip (D6).

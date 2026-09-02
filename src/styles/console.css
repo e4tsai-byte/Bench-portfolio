@@ -85,3 +85,94 @@
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
 }
+
+/* Back to bench: the persistent escape control (DESIGN.md 4.7). Corner-
+   anchored and identically placed in every non-bench state. Secondary chrome,
+   so it reads at --ink-1 and stays at the periphery (DESIGN.md 5). */
+.back-to-bench {
+  position: fixed;
+  top: var(--sp-5);
+  left: var(--sp-5);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  /* Hit target comfortably over the 44px floor (DESIGN.md 3, item 4). */
+  min-height: var(--sp-7);
+  padding: var(--sp-3) var(--sp-5);
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  background-color: var(--frost-2);
+  backdrop-filter: blur(var(--frost-2-blur));
+  -webkit-backdrop-filter: blur(var(--frost-2-blur));
+  border: 0;
+  border-radius: var(--r-sm);
+  box-shadow: var(--frost-edge), var(--shadow-1);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out-2),
+    box-shadow var(--dur-fast) var(--ease-out-2);
+}
+
+/* Hover brightens and lifts the rim rather than swapping hue, so the state is
+   not signalled by colour alone (DESIGN.md 3, item 5). */
+.back-to-bench:hover {
+  color: var(--ink-0);
+  box-shadow: var(--frost-edge), var(--shadow-2);
+}
+
+.back-to-bench__mark {
+  width: var(--sp-4);
+  height: var(--sp-4);
+}
+
+/* Coming-soon plaque for the objects not yet wired this phase (Invariant 1.7).
+   Diegetic and typographic: a small plaque, never a floating "coming soon"
+   toast and never an emoji (DESIGN.md 4.2 and 7). */
+.plaque {
+  display: inline-block;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-sm);
+  background-color: var(--ground-1);
+  box-shadow: inset 0 0 0 1px var(--frost-edge-outer);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* Scene shell. One focused subject at a time (DESIGN.md 5). */
+.scene {
+  min-height: 100vh;
+  padding: var(--sp-8);
+}
+
+/* The heading receives focus on transition, but it is not itself an
+   interactive control, so it must not draw a focus ring on click. Keyboard
+   focus still shows one through :focus-visible in base.css. */
+.scene__heading:focus {
+  outline: none;
+}
+
+.bench-objects {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--sp-5);
+  margin-top: var(--sp-6);
+  margin-bottom: var(--sp-6);
+}
+
+/* A card that is also a button keeps the card material but must not inherit
+   the user agent's button chrome. */
+button.card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
