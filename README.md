@@ -22,7 +22,8 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Crossfade-plus-scale transition (GSAP) | **Planned** |
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
-| Research content (`content/research.ts`) | **Implemented** (3 items, publication citation verified against Crossref); real PDAC abstract still **Planned** |
+| Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
+| Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
 | Spline master + microscope stills | **Planned** (Placeholder art used until produced) |
 | Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
 | Deployment to Vercel | **Planned** |
@@ -91,6 +92,16 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03 (content, part two)
+
+- **The real PDAC/Schwann-cell abstract landed**, supplied verbatim by the owner, closing the last Phase 1 content gap. It is stored unaltered with an instruction not to paraphrase it: it is a scientific claim in its author's own words.
+- **Filled all four Phase 2 content files** on the owner's instruction: `publications.ts`, `patents.ts`, `timeline.ts`, and `aiProjects.ts`. Recorded as D18. This does not touch Invariant 1.7, whose stated reason is that Phase 1's feel questions must be settled by looking before the view pattern is replicated. A typed data file carries no view and wires no hotspot, and the Phase 2 objects remain unbuilt. `CLAUDE.md` Section 4 was amended rather than left contradicting the repo.
+- **Extended three of the `PRODUCT.md` Section 10 shapes** (D19), all with optional fields so nothing declared was broken. The shapes could not express real information that exists: what the owner did on a paper, where a patent is granted and what it does, and whether a timeline entry is a point-in-time award or a spanning role. `PRODUCT.md` Section 10 now matches the code.
+- **Awards have no content model.** Section 10 defines five shapes and none is an award, yet there are four to show. They live in `timeline.ts` under `kind: 'award'` rather than being dropped or given an undeclared sixth file. A dedicated model would be a deliberate `PRODUCT.md` change.
+- **One unsourced value, flagged rather than hidden** (Invariant 1.9): the UCSD start date of `2025-09` is inferred from the expected Jun 2029 graduation, since the resume states only the graduation. Marked inline in `timeline.ts` and awaiting the owner's confirmation.
+- **`BioTechathalon` confirmed correct** by the owner and left exactly as written.
+- No contact details in any content file. Verified by sweep. City-level locations are included, matching what the resume already states publicly.
 
 ### 2026-09-03 (content)
 

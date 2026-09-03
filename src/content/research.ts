@@ -19,11 +19,9 @@
  * DELIBERATELY ABSENT: no phone number, no postal address, no contact details
  * of any kind. This repository is public.
  *
- * KNOWN GAP: `abstract` currently holds an expanded description drawn from the
- * resume, not a real scientific abstract. PRODUCT.md Section 10 specifies this
- * field as full abstract text. The genuine PDAC/Schwann-cell abstract has never
- * been supplied to this repo, so the field is honest about what it holds rather
- * than being padded out to look complete.
+ * The PDAC/Schwann-cell abstract is now the real one, supplied verbatim by the
+ * owner on 2026-09-03. The other two items still carry resume-derived long form
+ * in `abstract`, which is what exists for them.
  */
 
 export interface ResearchItem {
@@ -49,14 +47,34 @@ export const research: ResearchItem[] = [
     org: 'Academia Sinica, Genomics Research Center',
     period: 'Jul 2026 to Aug 2026',
     field: ['Wet-lab', 'Biotech'],
+    // The real abstract, supplied verbatim by the owner. Do not paraphrase,
+    // summarise, or "tidy" this text: it is a scientific claim in its author's
+    // own words, and Invariant 1.5 makes its accuracy blocking.
     abstract:
-      'Characterized Schwann cell involvement in PanIN (pancreatic intraepithelial ' +
-      'neoplasia) progression in KC (Kras G12D) mice. Executed and optimized a full 3D ' +
-      'volumetric imaging pipeline: perfusion, embedding, vibratome sectioning, ' +
-      'multi-channel immunofluorescence, optical clearing, and confocal z-stack ' +
-      'acquisition. Assessed fluorocitrate-mediated glial inhibition through in vitro ' +
-      'drug treatment and quantitative confocal analysis. Produced and presented an ' +
-      'end-of-program poster.',
+      'Pancreatic ductal adenocarcinoma (PDAC) has a 13% 5-year survival, with late ' +
+      'detection limiting curative intervention. Pancreatic intraepithelial neoplasia ' +
+      '(PanIN) is the localized precursor. As PanINs grow, the cellular microenvironment ' +
+      'remodels to sustain its progression. Perineural invasion (PNI) is a hallmark of ' +
+      'established PDAC, but whether nerves contribute similarly to the earlier, ' +
+      'pre-invasive PanIN stage remains poorly understood. In the peripheral system, ' +
+      'axonal growth is guided by glial cells, and Schwann cells are the principal glia ' +
+      'of the pancreas. They are therefore the hypothesized organizers of the neural ' +
+      'remodeling observed around PanINs. To examine the role of Schwann cells, we ' +
+      'utilized pharmacological ablation via fluorocitrate in LSL-Kras G12D; Pdx1-Cre ' +
+      '(KC) mice. Furthermore, to overcome the limitation of standard histology in ' +
+      'capturing network-like structures and enabling downstream analysis, we employed ' +
+      '3D histology to map each PanIN and its microenvironment in its entirety. Our ' +
+      'results validated the selectivity and metabolic effect of fluorocitrate on ' +
+      'Schwann cells in vitro. In vivo, we further confirmed that Schwann cells ' +
+      'correlated with PanIN growth, along with nerve and fibroblast measures. In short, ' +
+      'Schwann cell ablation was sufficient to halt PanIN progression, resulting in ' +
+      'fewer and smaller PanINs, accompanied by alterations in the microenvironmental ' +
+      'cells. This was characterized by disrupted fibroblast and nerve association along ' +
+      'PanIN growth, thereby suggesting the importance of Schwann cells for PanIN ' +
+      'progression and innervation. These findings establish a possibility of functional ' +
+      'requirement for Schwann cells in early pancreatic tumorigenesis and suggest that ' +
+      'glial-stromal crosstalk may represent a previously unrecognized therapeutic ' +
+      'vulnerability.',
     summary:
       'Built a full 3D volumetric imaging pipeline to characterize Schwann cell ' +
       'involvement in pancreatic pre-cancerous lesion progression, then tested glial ' +

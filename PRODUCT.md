@@ -150,13 +150,16 @@ export const research: ResearchItem[];
 export interface Publication {
   id: string; title: string; authors: string; venue: string;
   year: number; doi?: string; url?: string; tags: string[];
+  contribution?: string;               // what the owner actually did (D19)
 }
 
 // content/patents.ts  (Notebook, Phase 2)
 export interface Patent {
-  id: string; title: string; number: string;
+  id: string; title: string; number: string;   // "" when none issued yet
   status: "Granted" | "Provisional" | "Pending";
   year: number; url?: string;
+  jurisdictions?: string[];            // where it is granted (D19)
+  summary?: string;                    // what it actually does (D19)
 }
 
 // content/timeline.ts  (Calendar, Phase 2)
@@ -164,6 +167,7 @@ export interface TimelineEntry {
   id: string; title: string; org: string; location?: string;
   start: string; end?: string;         // ISO or "YYYY-MM"
   role: string; techStack?: string[]; description: string;
+  kind?: "role" | "education" | "award";  // awards have no model of their own (D19)
 }
 
 // content/aiProjects.ts  (Computer, Phase 2)
