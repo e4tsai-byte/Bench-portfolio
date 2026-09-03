@@ -18,13 +18,14 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Product spec, design system, engineering contract, agent roster | **Implemented** (this repo's `.md` files) |
 | Project scaffold (React + Vite + TypeScript, GSAP) | **Implemented** (toolchain only, no UI) |
 | Design tokens (`styles/tokens.css`) | **Implemented** (verified in-browser) |
-| Bench scene: master still + hotspots + hover-glow | **Planned** |
+| Bench scene: real-time 3D scene + object selection | **Implemented** (placeholder primitive geometry, awaiting the owner's models) |
+| Hover-glow on objects | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
-| Crossfade-plus-scale transition (GSAP) | **Planned** |
+| Camera transitions (GSAP), reduced-motion path | **Implemented** (verified in-browser) |
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
-| Spline master + microscope stills | **Planned** (Placeholder art used until produced) |
+| Owner's 3D models (`assets/models/*.glb`) | **Planned** (Placeholder primitive geometry in use until delivered) |
 | Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
@@ -44,7 +45,7 @@ A pristine, near-monochrome lab bench in cool blues and sterile whites, objects 
 
 ## What this is not
 
-- **Not a real-time 3D engine.** The bench is pre-baked stylized imagery with faked 2D transitions, for speed and craft over raw fidelity. "Photorealistic" is not a goal.
+- **Not photorealistic.** The bench *is* a real-time 3D scene as of 2026-09-03 (see D20), but the look is stylized, high-key, and matte. "Photorealistic" is not a goal and stays retired.
 - **Not a resume replacement.** It is a playground; the resume does the fast-read work.
 - **Not dark mode.** The whole experience is high-key by law (`DESIGN.md`).
 - **Not mobile-first.** Desktop-first by decision; a reduced mobile pass is later polish.
@@ -52,7 +53,8 @@ A pristine, near-monochrome lab bench in cool blues and sterile whites, objects 
 ## Tech stack
 
 - **React + Vite + TypeScript**, static build.
-- **GSAP** (with Draggable and InertiaPlugin) for timeline-based motion: the zoom transitions, and later the focus-knob and calendar scrub.
+- **Three.js via React Three Fiber** for the single real-time bench scene (D20). `@react-three/drei` deliberately not installed, to keep the bundle down.
+- **GSAP** (with Draggable and InertiaPlugin) for timeline-based motion: the camera moves, and later the focus-knob and calendar scrub.
 - **No backend.** No server, no accounts, no secrets in the client.
 - **Deploy:** Vercel, auto-building from `main`.
 
@@ -92,6 +94,18 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03 (D20: the bench becomes one real-time scene)
+
+- **Overturned the pre-baked-stills form of Invariant 1.2.** The bench is now a single real-time Three.js scene via React Three Fiber, with one camera state per bench state. Recorded as D20, superseding the asset half of D2, D5, and D6.
+- **What decided it:** the owner authors and iterates the 3D files. On the baked path every model tweak cost two re-exports, an overlay registration check, a contrast re-verification, and two large binaries committed to a public repo. On this path it costs a file drop and a refresh. The entire fake-zoom apparatus (identical camera positions, FOV-only changes, hand-computed scale factor and transform origin) also disappears, and one scene with one lighting rig makes master-to-object consistency structural rather than verified per export.
+- **Cost of the switch, measured not estimated:** zero lines of `src/` touched art, verified by grep. Stages A, B, and C survived intact. This was the cheapest moment the switch would ever cost.
+- **Baking is retained as a documented fallback, not deleted.** Stills can be captured from this same scene at any time. Open question 1 is exactly the kind of thing that must be settled by looking, so a bad answer should cost a capture, not a rebuild.
+- Added `three/palette.ts`, the **token bridge** (D21). Materials and lights are set in JavaScript where nothing enforces the palette, so the scene reads its colours from the CSS custom properties at runtime and `tokens.css` stays the single source of colour. It throws loudly on a missing token rather than falling back, because a scene rendered in fallback colours would look plausible while being off-palette.
+- Added a **keyboard route into every object**. The canvas is pointer-driven, so without it there was no keyboard path in at all, which would fail `DESIGN.md` Section 3 item 3.
+- **Verified in-browser rather than asserted:** the camera reaches its specified state exactly (measured, not eyeballed), state and `#hash` and Back-to-Bench all stay correct through a transition, and with `prefers-reduced-motion` forced on, the camera cuts straight to the destination on the very next frame instead of travelling (Invariant 1.8).
+- **Honest cost:** the gzipped JS bundle went from 61 kB to 324 kB. That is roughly 80 kB more than the estimate given when the switch was proposed, and the estimate should not be treated as having been right. It is still plausibly smaller than two 3200x1800 PNGs, but it is a real regression in load weight and code-splitting the canvas is an open follow-up.
+- Two failures during the work were **environment, not code**, and are recorded so they are not re-diagnosed later: an "Invalid hook call / more than one copy of React" crash was a stale Vite dependency pre-bundle, because the dev server had been started before `three` was installed (fixed by clearing `node_modules/.vite` and restarting), and an apparently mis-framed camera turned out to be a screenshot captured mid-transition.
 
 ### 2026-09-03 (content, part two)
 

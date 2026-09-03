@@ -28,3 +28,13 @@ yarn-error.log*
 .DS_Store
 .idea/
 *.swp
+
+# 3D source files (D21): only export-ready .glb is committed. Every revision of
+# a large binary is permanent in a public repo's history.
+*.blend
+*.blend[0-9]*
+*.spline
+*.fbx
+*.obj
+*.mtl
+*.ztl

@@ -39,15 +39,18 @@ One rule overrides all borrowed references: **the experience is high-key. There 
 
 ## 5. Fidelity and asset strategy
 
-The bench is not a live 3D engine. It is a set of **pre-baked stills**:
-- One **master bench still** (the full bench, all four objects present and lit).
-- One **framed "zoom" still per object** (a close-up composition of that object, consistent with the master: same model, same lighting).
+**Superseded 2026-09-03 by D20.** This section originally specified pre-baked stills. The bench is now a **single real-time 3D scene** (Three.js via React Three Fiber) containing all four objects, with one camera state per bench state. Transitions are real camera moves.
 
-Transitions between stills are faked in 2D (see Section 8). This keeps load times low, avoids the real-time 3D tax, and stays fully art-directable.
+Still **not photorealistic**: the look is stylised, high-key, and matte, which is deliberately the cheapest thing to render well in real time. The goal D2 retired stays retired.
+
+**Why the change.** The owner authors and iterates the 3D files. On the baked path every model tweak cost two re-exports, a registration check, a contrast re-verification, and two large binaries committed to a public repo. On this path it costs a file drop and a refresh. One scene and one lighting rig also make master-to-object consistency structural instead of verified per export.
+
+**Baking is retained as a fallback, not deleted.** Stills can be captured from this same scene at any time and fed to a 2D crossfade. If the real camera move disappoints, that costs a capture rather than a rebuild.
 
 **Asset ownership and unblocking**
-- Ethan builds the scene in **Spline** and exports the stills. Section 9 is the precise production brief for that.
-- The implementing agent builds the **entire interaction layer against labeled AI-generated placeholder images** so no code work waits on the real renders. Placeholders live in `src/assets/placeholders/` and are swapped for Spline exports when ready. Placeholder filenames must match the final asset filenames so the swap is a drop-in.
+- Ethan creates, edits, and exports the models.
+- The interaction layer is built against **primitive placeholder geometry defined in code**, so nothing waits on the models. A real model drops into `src/assets/models/` under the filename the scene already expects (Invariant 1.3), and the object's transform, camera state, and hotspot do not move.
+- **Only export-ready optimised `.glb` is committed.** Source files stay out of this public repository.
 
 ## 6. Tech stack
 
@@ -105,14 +108,29 @@ Bench-portfolio/
 - A persistent **"Back to Bench"** control is visible in every non-BENCH state.
 - **Onboarding:** on first visit only, show a dismissible hint pointing at the glowing hotspots. Persist dismissal in `localStorage` (key e.g. `bench.onboarded`). (localStorage is fine here: this is a deployed site, not an in-conversation preview.)
 
-**Transition system** (`Transition.tsx`, GSAP):
-- Mechanism: **crossfade plus scale** between the master still and the object's framed still. Chosen as the easiest to implement.
-- Easing: fast-in, slow-out (e.g. `power3.out`), so the move starts quick and settles gently.
-- Apply a **depth-of-field blur** to the outgoing layer as the incoming framed still resolves.
-- Keep transitions short (roughly 600 to 900 ms). Provide a reduced-motion path that cuts straight to the destination for users with `prefers-reduced-motion`.
-- Deferred option: a single pre-rendered MP4 clip for the hero microscope move, added later ONLY if the 2D fake-zoom feels flat when viewed live. Do not build this in Phase 1.
+**Transition system** (`three/CameraRig.tsx`, GSAP). **Superseded 2026-09-03 by D20**: this was a crossfade plus scale between two stills, and is now a real camera move.
+- Mechanism: **one camera state per bench state**, animated with GSAP. Both the camera position and its look-at target are animated; animating position alone and re-pointing at the end produces a visible snap at the finish.
+- Easing: fast-in, slow-out (`power3.out`), no overshoot.
+- Duration read from the motion tokens, so a camera move and a CSS hover cannot drift apart.
+- `prefers-reduced-motion` cuts straight to the destination with no travel, and so does the first paint, which is an arrival rather than a transition. Verified in-browser, not assumed.
+- Retained fallback: stills can be captured from this same scene and fed to the old 2D crossfade if the real move disappoints. That path is kept in the docs deliberately (Invariant 1.2 as amended).
 
-## 9. Spline scene production brief (owner-built asset)
+## 9. Model production brief (owner-built asset)
+
+**Superseded 2026-09-03 by D20.** This section was a brief for baking stills out of Spline. The bench is now one real-time scene, so what the owner delivers is **models, not renders**.
+
+What is needed, in priority order:
+
+1. `bench.glb` and `microscope.glb` unblock Phase 1. The other three are Phase 2.
+2. Export-ready optimised `.glb` only. Source files stay out of this public repo (D21).
+3. Filenames are the swap contract (Invariant 1.3): `bench.glb`, `microscope.glb`, `notebook.glb`, `calendar.glb`, `computer.glb`. Never versioned, always overwritten in place.
+4. Model with the origin at the object's base and Y up, so a model drops into the transform the scene already expects without re-tuning the camera states.
+5. Keep materials simple. The scene applies its own materials from the token bridge, and any baked-in colour is an Invariant 1.6 violation the moment it lands.
+6. Silhouette matters more than detail: hotspots and hover glow read off the silhouette, and each object needs to stay visually separable from its neighbours in the bench view.
+
+The palette, lighting, and legibility constraints in `DESIGN.md` Section 10 still apply, but they are now scene settings the code owns rather than render settings baked into a PNG.
+
+### Historical: the original Spline still-baking brief
 
 Deliver these exports from one Spline scene so all stills stay consistent:
 

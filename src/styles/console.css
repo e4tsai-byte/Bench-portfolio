@@ -142,10 +142,80 @@
   text-transform: uppercase;
 }
 
-/* Scene shell. One focused subject at a time (DESIGN.md 5). */
+/* Scene shell. One focused subject at a time (DESIGN.md 5). The canvas fills
+   the viewport and the UI layer floats over it. */
 .scene {
+  position: relative;
   min-height: 100vh;
+}
+
+.scene__canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.scene__ui {
+  position: relative;
+  z-index: 1;
   padding: var(--sp-8);
+  pointer-events: none;
+}
+
+/* The UI layer must not swallow clicks meant for the objects behind it, but its
+   own controls still need to be clickable. */
+.scene__ui > * {
+  pointer-events: auto;
+}
+
+/* Keyboard route into the objects. The canvas is pointer-driven, so without
+   this there is no keyboard path in at all (DESIGN.md 3, item 3). */
+.bench-keys {
+  position: fixed;
+  z-index: 1;
+  left: var(--sp-8);
+  bottom: var(--sp-8);
+}
+
+.bench-keys ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.bench-key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--sp-7);
+  padding: var(--sp-3) var(--sp-5);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--ink-1);
+  background-color: var(--frost-2);
+  backdrop-filter: blur(var(--frost-2-blur));
+  -webkit-backdrop-filter: blur(var(--frost-2-blur));
+  border: 0;
+  border-radius: var(--r-sm);
+  box-shadow: var(--frost-edge), var(--shadow-1);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out-2),
+    box-shadow var(--dur-fast) var(--ease-out-2);
+}
+
+.bench-key:hover:not(:disabled) {
+  color: var(--ink-0);
+  box-shadow: var(--frost-edge), var(--shadow-2);
+}
+
+/* Not wired this phase (Invariant 1.7). Disabled, not hidden: the object is
+   visibly present and visibly not ready, which is what the plaque is for. */
+.bench-key:disabled {
+  cursor: default;
+  color: var(--ink-2);
 }
 
 /* The heading receives focus on transition, but it is not itself an

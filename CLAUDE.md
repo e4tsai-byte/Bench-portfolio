@@ -12,13 +12,24 @@ Read `PRODUCT.md` for what the project is and why. Read `DESIGN.md` for the visu
 
 Enforcer: brand-designer (blocking). There is no dark mode anywhere. No background, console, modal, or overlay may go dark, regardless of which reference inspired it. Contrast is near-black ink on luminous white; "glow" is brighter and whiter with a cold rim, never neon on black. A dark surface is a defect. See `DESIGN.md` Section 1 and Section 7.
 
-### 1.2 Pre-baked assets, not real-time 3D
+### 1.2 One real-time scene, with baking retained as a fallback
 
-Enforcer: scene-artist + architect. The bench is a set of baked stills (one master, one framed still per object), not a live 3D engine (no Three.js, no runtime Spline canvas). Transitions are faked in 2D (crossfade plus scale). Introducing a real-time 3D renderer is a change to this invariant and must be recorded in Section 7.
+Enforcer: scene-artist + architect. **Amended 2026-09-03 (D20); the original pre-baked-stills form of this invariant is superseded.**
+
+The bench is a single real-time 3D scene (Three.js via React Three Fiber), containing all four objects, with one camera state per bench state. Transitions are camera moves, not 2D fakes. There is exactly one scene and one lighting rig, so the master view and every object view are consistent by construction rather than by verification.
+
+Two limits keep this from becoming an open licence:
+
+- **Still not photorealism.** D2 retired that goal and it stays retired. The look is stylised, high-key, and matte, which is deliberately the cheapest thing to render well in real time.
+- **Baking stays a live fallback, not a deleted path.** Stills can be captured from this same scene at any time and fed to the 2D crossfade. Open question 1 (does the zoom convince) is now answerable by looking at the real thing, and if the answer is bad, the fallback costs a capture rather than a rebuild. Do not delete the fallback from the docs without a recorded decision.
 
 ### 1.3 Placeholder-swap discipline
 
-Enforcer: frontend-engineer. The interaction layer is built against labeled placeholder images so nothing waits on the Spline renders. Placeholder filenames in `src/assets/placeholders/` must exactly match the final filenames in `src/assets/renders/`, so swapping real art in is a drop-in with no code change. A placeholder that ships to production without being flagged in the README status table is a defect.
+Enforcer: frontend-engineer. **Amended 2026-09-03 (D20): the contract now covers models, not images.**
+
+The interaction layer is built against primitive placeholder geometry defined in code, so nothing waits on the owner's models. When a real model arrives it drops into `src/assets/models/` under the filename the scene already expects, and swapping it in is a one-line change from a primitive to a loaded mesh. The object's transform, its camera state, and its hotspot do not move.
+
+Filenames are therefore an interface: `bench.glb`, `microscope.glb`, `notebook.glb`, `calendar.glb`, `computer.glb`. Never versioned in the filename, always overwritten in place. **Only export-ready optimised `.glb` is committed**; source files (`.blend` and equivalents) stay out of this public repository entirely, because every revision of a large binary is permanent in git history. Placeholder geometry that ships to production without being flagged in the README status table is a defect.
 
 ### 1.4 Single-page state machine, no router
 
@@ -31,6 +42,8 @@ Enforcer: content-steward (blocking on claim accuracy). All user-visible portfol
 ### 1.6 Tokens only
 
 Enforcer: brand-designer. Every color, radius, spacing, duration, and type value comes from `styles/tokens.css`. A raw hex or px value in a component is a defect. Contrast is verified in a live browser against the actual composite (the blurred bench), not a flat swatch.
+
+**Extended 2026-09-03 (D20) to cover the 3D scene.** Materials and lights are set in JavaScript, where nothing stops a colour drifting off-palette, so the scene does not hardcode colours either: `three/palette.ts` reads the CSS custom properties at runtime and is the only place the scene gets colour from. A literal colour in a material is the same defect as a raw hex in a component.
 
 ### 1.7 Phase discipline
 
@@ -92,9 +105,13 @@ Bench-portfolio/
       patents.ts                 Notebook data (Phase 2)
       timeline.ts                Calendar data (Phase 2)
       aiProjects.ts              Computer data (Phase 2)
+    three/
+      BenchScene.tsx             the R3F scene: lights, objects, materials
+      CameraRig.tsx              camera state per bench state, GSAP moves
+      palette.ts                 token bridge, reads tokens.css into the scene
     assets/
-      renders/                   final Spline exports
-      placeholders/              labeled stand-ins, filenames match renders/
+      models/                    export-ready .glb only; filenames are the 1.3 contract
+      renders/                   baked stills, only if the 1.2 fallback is taken
     styles/
       tokens.css                 all design tokens (loads first)
       base.css                   reset + ground
@@ -198,6 +215,20 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 - **D19. Three optional fields added to the `PRODUCT.md` Section 10 shapes.** The declared shapes could not express real information that exists: a `Publication` had nowhere to record what the owner actually did on a paper, a `Patent` could record neither where it was granted nor what it does (which is most of what makes a patent worth showing), and a `TimelineEntry` could not distinguish a point-in-time award from a spanning role. Added `Publication.contribution`, `Patent.jurisdictions` and `Patent.summary`, and `TimelineEntry.kind`. All **optional**, so the declared shapes are extended rather than broken, and `PRODUCT.md` Section 10 is updated to match.
 - **Awards have no content model.** `PRODUCT.md` Section 10 defines five shapes and none of them is an award, yet the resume carries four. Rather than drop them or add an undeclared sixth file (structural drift under Section 2), they live in `timeline.ts` as entries with `kind: 'award'`, which is defensible because they are dated milestones on a chronology. If a dedicated model is wanted, that is a `PRODUCT.md` change made deliberately.
 - **One unsourced value, flagged not hidden.** `timeline.ts` gives the UCSD start as `2025-09`. The resume states only the expected graduation of Jun 2029, so the start is inferred from a standard four-year program. It is marked inline in the file and needs the owner's confirmation before it goes outward (Invariant 1.9).
+
+### 2026-09-03: D20, the bench becomes one real-time scene
+
+- **D20. Real-time 3D, with baking kept as a fallback.** Overturns the pre-baked-stills form of Invariant 1.2 and supersedes the asset half of D2, D5, and D6. The owner is authoring, editing, and iterating the 3D files themselves, and that is what decided it: on the baked path every model tweak costs two re-exports, an overlay registration check, a contrast re-verification, and two multi-megabyte binaries committed to a public repo. That loop is unaffordable while the look is still being found, and it was certain to be still being found, since the scene has never been built. On the real-time path a model revision costs a file drop and a refresh.
+
+  Three further reasons, in descending weight. The entire fake-zoom apparatus (identical camera positions, FOV-only changes, overlay registration, a hand-computed scale factor and transform origin) existed solely to make a 2D crossfade resemble a camera move, and it disappears. One scene and one lighting rig make master-to-object consistency structural rather than something verified per export. And the bundle intuition was backwards: three.js plus React Three Fiber is roughly 180kb gzipped, while two 3200x1800 PNGs are plausibly 2 to 5MB each.
+
+  **What did not change.** D2's retirement of photorealism stands: the look is stylised, high-key, matte, which is deliberately the easiest case to render well in real time. The baked path is retained as a documented fallback rather than deleted, because Open question 1 is exactly the kind of thing that must be settled by looking, and this way a bad answer costs a still capture instead of a rebuild.
+
+  **Cost of the switch, measured not estimated.** Zero lines of `src/` touched art at the time of the decision, verified by grep. Stages A, B, and C survive intact. This was the cheapest moment the switch would ever cost, and it will not be this cheap again.
+
+- **D21. Two conditions attached to D20.** First, a **token bridge**: materials and lights are set in JavaScript where nothing enforces the palette, so `three/palette.ts` reads the CSS custom properties at runtime and is the scene's only source of colour. Without it Invariant 1.6 silently stops governing half the screen. Second, **only export-ready `.glb` is committed**; source files stay out of this public repository, because every revision of a large binary is permanent in git history and the owner will be revising often.
+
+- **`@react-three/drei` deliberately not installed.** Primitive placeholder geometry does not need it, and `PRODUCT.md` Section 6 says keep the bundle light. Revisit when model loading actually needs `useGLTF`; `useLoader` with three's own `GLTFLoader` may be enough.
 
 ### Open questions (settle by looking, not by planning)
 

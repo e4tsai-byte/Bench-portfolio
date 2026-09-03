@@ -254,7 +254,13 @@ The bench itself is the brand: the cool-white lab, the specimen-under-glass fram
 
 ## 10. Render constraints
 
-Sections 1 through 9 govern the interface and quietly assume the imagery beneath it. This section governs the imagery itself, because the baked stills are not decoration: they are the material the interface has to stay legible against, and a still that breaks these rules cannot be fixed in CSS.
+Sections 1 through 9 govern the interface and quietly assume the imagery beneath it. This section governs the imagery itself, because what sits behind a console is not decoration: it is the material the interface has to stay legible against.
+
+**Amended 2026-09-03 (D20).** These constraints were written for baked stills and now govern a **live scene**. Two things change, and one gets harder:
+
+- The luminance and quiet-zone numbers below are unchanged. They are derived from the token values and the frost alpha, and neither moved.
+- They are now **scene settings the code owns** (lights and materials in `three/`, colours via `three/palette.ts`) rather than properties baked into a PNG. That makes them easier to hit and easier to correct.
+- **The guarantee is harder.** A baked still is a fixed set of pixels you measure once. With a live camera, what sits under the console changes as the camera moves, so the quiet-zone rule must hold **across every camera state**, not one frame. The composite audit becomes a per-state check.
 
 Enforcer: brand-designer (blocking), with scene-artist producing. These constraints were derived from the committed token values, not estimated.
 
