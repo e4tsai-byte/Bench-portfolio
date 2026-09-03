@@ -9,6 +9,7 @@ import { Suspense, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import BackToBench from './components/BackToBench'
 import BenchScene from './three/BenchScene'
+import Microscope from './scenes/Microscope'
 import { CAMERA_STATES } from './three/CameraRig'
 import { OBJECT_LABEL, isWiredThisPhase, useBenchMachine } from './state/benchMachine'
 
@@ -57,6 +58,8 @@ export default function App() {
 
         {isBench ? (
           <p className="hud-label">Stage D / real-time scene / placeholder geometry</p>
+        ) : state === 'MICROSCOPE' ? (
+          <Microscope />
         ) : isWiredThisPhase(state) ? (
           <p className="hud-label">{`state / ${state.toLowerCase()}`}</p>
         ) : (

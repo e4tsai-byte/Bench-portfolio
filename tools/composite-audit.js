@@ -5,9 +5,9 @@
  *
  * DESIGN.md Section 3 item 1 requires contrast to be verified against the
  * actual composite, not a flat swatch. In this project a text element sits on
- * a translucent console, which sits on a BLURRED baked still. There is no
- * static equivalent of backdrop-filter, so the effective backdrop under a line
- * of text can only be measured in a live browser, against a real render.
+ * a translucent console, which sits on a live-rendered WebGL scene (D20).
+ * There is no static equivalent of backdrop-filter, so the effective backdrop
+ * under a line of text can only be measured in a live browser.
  *
  * Two choices in here matter and must survive into any future automation:
  *
@@ -20,17 +20,52 @@
  *      Without the pad, the canvas edge contributes transparent black and
  *      produces false failures near the frame edge.
  *
+ * ADAPTED 2026-09-03 for the live canvas (brand-designer review, ahead of the
+ * microscope console build). What changed from the baked-<img> version:
+ *
+ *   - Selector targets the live canvas (`.scene__canvas canvas`), not a
+ *     static <img>. Add `data-bench-canvas` to it for a more stable hook if
+ *     the class name ever changes.
+ *   - Dropped the object-fit:cover crop math entirely. The canvas draws at
+ *     its own CSS size 1:1 (it is not object-fit cropped, it fills
+ *     .scene__canvas directly), so there is no scale/letterbox to reproduce.
+ *   - Per-element sampling (below) already handles the "sample the real
+ *     shape, not a rectangle" concern that mattered when only a PRE-BUILD
+ *     estimate existed (see DESIGN.md 10.2, and the camera-framing search
+ *     logged in the build history). Once real DOM elements exist, each
+ *     text-bearing element's own getBoundingClientRect() is exact by
+ *     construction: a HUD mark positioned in a box corner is already sampled
+ *     at its real position, whether that lands in the ring or the core, with
+ *     no separate circle-vs-rectangle judgment call needed.
+ *   - TIMING, a new requirement a static image never had. The canvas is a
+ *     live, repainting WebGL surface with no `preserveDrawingBuffer`, so its
+ *     buffer can be blank or stale outside the same tick as a paint. Before
+ *     running this: temporarily add `preserveDrawingBuffer: true` to the
+ *     Canvas `gl` prop in App.tsx (see the build history for the exact
+ *     one-line diff used during development), reload, and wait for the
+ *     camera transition to fully settle (`--dur-move` has elapsed and the
+ *     scene is visibly still) before pasting this in. Revert the flag
+ *     afterward: it has a real performance cost and is a debugging aid, not
+ *     a shipped setting.
+ *
  * HOW TO RUN
- *   1. npm run dev
- *   2. Put the app in the MICROSCOPE state (#microscope).
+ *   1. npm run dev, with preserveDrawingBuffer set as above.
+ *   2. Put the app in the MICROSCOPE state (#microscope) and let the camera
+ *      settle.
  *   3. Paste this whole file into the dev console.
- *   4. Repeat at 1440x900 and at 1920x1080 minimum. object-fit: cover crops
- *      differently by aspect ratio, so a different part of the render ends up
- *      under the console. A pass at one viewport is not a pass.
+ *   4. Repeat at 1440x900 and at 1920x1080 minimum, treating each as a
+ *      genuinely different composition, not a resize of the same one: a live
+ *      camera at a fixed FOV shows more or less of the actual scene as the
+ *      canvas aspect ratio changes, unlike the old object-fit:cover crop,
+ *      which kept the same content centred at any size. A pass at one
+ *      viewport says nothing about the other.
+ *   5. Check Safari explicitly. backdrop-filter over a <canvas> specifically
+ *      (not an <img>) has a history of being less reliable there than over
+ *      Chromium; do not assume a Chrome pass generalises.
  *
  * REQUIREMENTS
- *   - The bench still must carry data-bench-still, and specimen cards must
- *     carry data-frost="2", or adjust the two selectors below.
+ *   - Specimen cards carry data-frost="2" (or adjust the selector below) so
+ *     they are sampled at the --frost-2 alpha rather than --frost-1.
  *   - Assets must be same-origin, or getImageData throws on a tainted canvas.
  *     Vite dev serves same-origin, which is another reason to audit there.
  */
@@ -57,13 +92,14 @@
     '25,107,91': 4.5, // --accent-deep
   }
 
-  const still = document.querySelector('[data-bench-still]') || document.querySelector('img')
-  if (!still) {
-    console.warn('composite-audit: no bench still found. Nothing to composite against yet.')
+  const live = document.querySelector('[data-bench-canvas]') || document.querySelector('.scene__canvas canvas')
+  if (!live) {
+    console.warn('composite-audit: no live canvas found. Nothing to composite against yet.')
     return
   }
 
-  const rect = still.getBoundingClientRect()
+  const rect = live.getBoundingClientRect()
+  const ground0 = getComputedStyle(document.documentElement).getPropertyValue('--ground-0').trim()
   const blur = parseFloat(
     getComputedStyle(document.documentElement).getPropertyValue('--frost-1-blur'),
   ) || 20
@@ -73,13 +109,20 @@
   canvas.width = Math.ceil(rect.width) + PAD * 2
   canvas.height = Math.ceil(rect.height) + PAD * 2
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
+
+  // The canvas is alpha:true with no scene background (deliberate, App.tsx),
+  // so pixels outside the model silhouette are transparent, not the page
+  // ground. Paint the real page background first, exactly as a real viewer's
+  // compositor does, or transparent regions read as false-black.
+  ctx.fillStyle = ground0 || '#ffffff'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.filter = `blur(${blur}px)`
 
-  // Reproduce object-fit: cover so we sample the same crop the browser shows.
-  const scale = Math.max(rect.width / still.naturalWidth, rect.height / still.naturalHeight)
-  const w = still.naturalWidth * scale
-  const h = still.naturalHeight * scale
-  ctx.drawImage(still, PAD + (rect.width - w) / 2, PAD + (rect.height - h) / 2, w, h)
+  // Draws at its own CSS size, 1:1. The canvas is not object-fit cropped, it
+  // fills .scene__canvas directly, so no scale/letterbox math is needed here
+  // (unlike the earlier baked-still version of this file, which sampled a
+  // static image and had to reproduce its object-fit: cover crop by hand).
+  ctx.drawImage(live, PAD, PAD, rect.width, rect.height)
 
   const worstBackdrop = (el, alpha) => {
     const r = el.getBoundingClientRect()

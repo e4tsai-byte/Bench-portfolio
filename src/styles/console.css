@@ -246,3 +246,222 @@ button.card {
   font: inherit;
   color: inherit;
 }
+
+/* ------------------------------------------------------------------------ */
+/* Microscope viewfinder (DESIGN.md 4.4)                                    */
+/*                                                                          */
+/* Two concentric tiers, per the ux-designer review that planned this:      */
+/*                                                                          */
+/*   - The CLEAR CORE has no frost at all. The live 3D scene shows through  */
+/*     crisp and undimmed, "looking through glass" rather than gauze. Cards */
+/*     float directly on it (--frost-2 over a raw render, never frost on    */
+/*     frost, so Section 2.5's stacking rule is not at issue here).         */
+/*   - The RING outside it is --frost-1, same material .console already     */
+/*     uses, carrying the HUD chrome.                                       */
+/*                                                                          */
+/* Size and position are relative units, not literal pixels: the exact spot */
+/* in the live render that is legible was found empirically (see the D-something */
+/* build log entry) and is NOT a fixed pixel coordinate, since a live camera */
+/* means the composite is camera-state-dependent, not a static baked crop.  */
+/* This is deliberately verified per DESIGN.md 10.2's method, not asserted. */
+/* ------------------------------------------------------------------------ */
+
+.viewfinder {
+  position: relative;
+  width: min(46vh, 60vw, 620px);
+  height: min(46vh, 60vw, 620px);
+  margin-inline: auto;
+}
+
+/* The ring: --frost-1 material, annulus geometry via a radial mask so the
+   clear core inside it is genuinely untouched, not just visually covered. */
+.viewfinder__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: var(--frost-1);
+  backdrop-filter: blur(var(--frost-1-blur));
+  -webkit-backdrop-filter: blur(var(--frost-1-blur));
+  box-shadow: var(--frost-edge), var(--shadow-3);
+  /* Anti-vignette: brighter and whiter toward the rim, per DESIGN.md 1's glow
+     law. A photographic vignette darkens toward the edge; that convention is
+     backwards here and is called out explicitly so nobody "corrects" this to
+     look like a camera vignette later. */
+  -webkit-mask-image: radial-gradient(
+    circle,
+    transparent 0%,
+    transparent 62%,
+    black 78%,
+    black 100%
+  );
+  mask-image: radial-gradient(
+    circle,
+    transparent 0%,
+    transparent 62%,
+    black 78%,
+    black 100%
+  );
+}
+
+/* The clear core: literally nothing painted here. Its only job is to define
+   the circular clip that keeps the scene view and the cards inside a lens
+   shape, per DESIGN.md 4.4. */
+.viewfinder__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: visible;
+}
+
+/* HUD crosshairs and coordinate markers (DESIGN.md 4.6). Static, non-reactive,
+   pure flavor per the design review: they do not report anything real, so
+   making them respond to which card is focused would imply they do. Placed in
+   the ring tier only, never inside the clear core. */
+.viewfinder__hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.viewfinder__hud-mark {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--ink-2);
+}
+
+.viewfinder__hud-mark--tl { top: var(--sp-4); left: var(--sp-4); }
+.viewfinder__hud-mark--tr { top: var(--sp-4); right: var(--sp-4); }
+.viewfinder__hud-mark--bl { bottom: var(--sp-4); left: var(--sp-4); }
+.viewfinder__hud-mark--br { bottom: var(--sp-4); right: var(--sp-4); }
+
+.viewfinder__crosshair {
+  position: absolute;
+  border: 1px solid var(--frost-edge-outer);
+}
+
+.viewfinder__crosshair--tl { top: var(--sp-5); left: var(--sp-5); width: var(--sp-4); height: var(--sp-4); border-right: 0; border-bottom: 0; }
+.viewfinder__crosshair--tr { top: var(--sp-5); right: var(--sp-5); width: var(--sp-4); height: var(--sp-4); border-left: 0; border-bottom: 0; }
+.viewfinder__crosshair--bl { bottom: var(--sp-5); left: var(--sp-5); width: var(--sp-4); height: var(--sp-4); border-right: 0; border-top: 0; }
+.viewfinder__crosshair--br { bottom: var(--sp-5); right: var(--sp-5); width: var(--sp-4); height: var(--sp-4); border-left: 0; border-top: 0; }
+
+/* ------------------------------------------------------------------------ */
+/* Specimen cards (DESIGN.md 4.5)                                           */
+/* ------------------------------------------------------------------------ */
+
+.specimens {
+  position: relative;
+  /* Deliberately larger than --sp-6: the viewfinder ring extends visually
+     past its own box in the browser (blur/shadow bleed), so this needs more
+     clearance than the token spacing scale's default gap would give. */
+  margin-top: var(--sp-8);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+/* One specimen card, collapsed. A real <button>, not a div with a click
+   handler, which is what makes it keyboard-reachable for free (DESIGN.md 3
+   item 3) since button.card is already styled in this file.
+   Specificity note: `button.card { width: 100% }` (defined above, for the
+   bench page's own cards) is element+class and beats a bare `.specimen`
+   class selector regardless of source order. The extra `.specimens`
+   ancestor here raises the class count so this wins instead. */
+.specimens .specimen {
+  width: min(15rem, 42vw);
+  text-align: left;
+  transition: transform var(--dur-fast) var(--ease-out-2),
+    box-shadow var(--dur-fast) var(--ease-out-2);
+}
+
+/* The generic <h3> in base.css is sized for section headings (--text-xl),
+   too large for a 15rem-wide card face. Design review specified --text-lg
+   for the title, tight line-height so 2-3 words per line still reads as one
+   confident heading rather than a ragged wrap. */
+.specimen h3 {
+  font-size: var(--text-lg);
+  line-height: var(--lh-snug);
+}
+
+/* The centre card of the arc sits slightly forward, matching .card:hover's
+   lift direction so it never looks like an accidental hover state. */
+.specimen--forward {
+  transform: translateY(calc(var(--sp-2) * -1));
+  box-shadow: var(--frost-edge), var(--shadow-3);
+}
+
+.specimen__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+.specimen__period {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+
+.specimen__tags {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.specimen__summary {
+  margin-top: var(--sp-3);
+  color: var(--ink-1);
+  font-size: var(--text-sm);
+}
+
+/* Expanded reading panel. Inline expansion, not a modal: DESIGN.md 5's
+   one-focus rule already has BackToBench as the single way out, and a modal
+   would add a second escape mechanism to learn (see the design review). */
+.specimen-reading {
+  width: min(34rem, 86vw);
+  margin: var(--sp-6) auto 0;
+  text-align: left;
+}
+
+.specimen-reading__abstract {
+  margin-top: var(--sp-4);
+  color: var(--ink-1);
+  white-space: pre-line;
+}
+
+.specimen-reading__links {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--frost-edge-outer);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.specimen-reading__link {
+  color: var(--accent-deep);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.specimen-reading__close {
+  margin-top: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  background: none;
+  border: 0;
+  padding: var(--sp-2) 0;
+  cursor: pointer;
+}
+
+.specimen-reading__close:hover {
+  color: var(--ink-0);
+}

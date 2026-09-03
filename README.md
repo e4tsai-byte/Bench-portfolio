@@ -8,8 +8,8 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), in progress. Stages A (toolchain), B (token layer), and C (state machine) are done; scenes and art are next.**
-**Last updated: 2026-08-31.**
+**Current phase: Phase 1 (vertical slice), in progress. Stages A through D are done, including the microscope console; hover-glow, onboarding, and deployment are next.**
+**Last updated: 2026-09-03.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
 
@@ -22,7 +22,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Hover-glow on objects | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Camera transitions (GSAP), reduced-motion path | **Implemented** (verified in-browser) |
-| Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
+| Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Implemented** (verified in-browser: disclosure, DOI link, keyboard path, empty state) |
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
 | Owner's 3D models (`assets/models/*.glb`) | **Placeholder** (`microscope.glb` is an exploratory low-poly draft, wired and rendering); notebook, calendar, computer still **Planned** |
@@ -30,7 +30,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
 | Render constraints (`DESIGN.md` Section 10) | **Implemented** (documented, blocking) |
-| Automated design audit (`tools/audit.mjs`) | **Implemented** (static half); composite check still **Planned** |
+| Automated design audit (`tools/audit.mjs`) | **Implemented** (static half); composite check (`tools/composite-audit.js`) adapted for the live canvas, still manual |
 
 ---
 
@@ -94,6 +94,16 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03 (the microscope console: Phase 1's actual payload)
+
+- **Planned by two specialist reviews before any code**, per `AGENTS.md`'s stated pipeline: ux-designer for the viewfinder's information architecture and card behaviour, brand-designer for the legibility gate. Both produced binding constraints, recorded as D23/D24 in `CLAUDE.md` Section 7.
+- **Built:** `three/palette.ts`-driven token colours throughout, `components/ViewfinderMask.tsx` (two-tier: a frost-free clear core, an outer `--frost-1` ring), `components/HudCrosshairs.tsx` (static, non-reactive, per the design review's own reasoning for why reactive HUD chrome would read as broken instrumentation), `components/SpecimenCard.tsx` (a real `<button>`, keyboard-reachable for free), and `scenes/Microscope.tsx` orchestrating an inline single-select disclosure over `content/research.ts`, with `Escape` collapsing a card without leaving the state and BackToBench remaining the sole exit throughout.
+- **The DESIGN.md 10.2 quiet-zone rectangle does not hold for the original camera framing, measured directly rather than assumed.** The generic 76%x68% rectangle sampled at the live `MICROSCOPE` state gave a flatness range of 119 to 202 levels against a 12-level limit. Root cause: a stage-plate material mapped to `--ink-1` (a text-tier token) sat directly in the framed centre. The camera was retargeted from the stage/illumination cluster to the binocular head, and a correctly-sized circular region there measures mean 226, min 220, range 11, clearing every floor. This is the concrete confirmation that DESIGN.md 4.4's circular mask is not optional styling: the rectangle genuinely fails where the circle genuinely passes, exactly as the brand-designer review predicted before any pixel was measured.
+- **Two real bugs found by testing, not by reading the code back.** First, camera targets were briefly computed from a `.glb`'s raw glTF node translations (model space, pre-normalisation) rather than the object's known world-space height, aiming roughly 2.5x too high. Second, `.specimen`'s width rule silently lost to an earlier `button.card { width: 100% }` rule (element+class beats a bare class regardless of source order), stacking all three cards full-width. Both are now fixed with the underlying mechanism understood, not patched with `!important`.
+- **`tools/composite-audit.js` adapted for the live canvas**, per the brand-designer review's own spec: samples `.scene__canvas canvas` at 1:1 (no crop math, since the canvas is not `object-fit` cropped like the old baked still), and paints the actual page ground behind the canvas's transparent pixels before blurring, since a naive read of a transparent WebGL buffer reports false-black rather than the composited colour a real viewer sees. Documents that a temporary `preserveDrawingBuffer` flag and a post-settle wait are required before running it, since the live buffer can be blank or stale outside the same tick as a paint.
+- **Verified in-browser, not asserted:** disclosure toggling (via direct DOM interaction, since synchronous reads after a native `.click()` predate React's batched re-render and produce false negatives, a real gotcha worth recording), the DOI link resolves to the Crossref-verified URL and opens in a new tab, `Escape` collapses without changing state or hash, and Tab order is BackToBench then the three cards in array order with no trap.
+- **Two items deliberately deferred, flagged rather than silently skipped:** `frameloop="demand"` (R3F runs a continuous render loop even with the camera at rest; a real but separate performance question) and a Safari-specific check of `backdrop-filter` over a `<canvas>`, which has a known history of being less reliable there than over Chromium.
 
 ### 2026-09-03 (D22: broad-surface luminance ceiling raised)
 
