@@ -133,7 +133,7 @@ Not every move is a GSAP timeline. Hover glows and focus rings are CSS transitio
 | `--ease-out-2` | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | GSAP `power2.out` |
 | `--ease-out-3` | `cubic-bezier(0.215, 0.61, 0.355, 1)` | GSAP `power3.out` |
 
-**The one documented exception to "everything is a token in `tokens.css`."** GSAP ease names are strings like `power3.out` and are not valid CSS, so they cannot live in a stylesheet. They live as one exported constant in `Transition.tsx` until a second consumer exists (the focus-knob and the calendar scrub, both Phase 2), at which point they earn a dedicated motion module. The durations stay in `tokens.css` and are read from there, so a duration is never stated twice.
+**The one documented exception to "everything is a token in `tokens.css`."** GSAP ease names are strings like `power3.out` and are not valid CSS, so they cannot live in a stylesheet. They live as one exported constant, `EASE` in `three/CameraRig.tsx` since D20, until a second consumer exists (the focus-knob and the calendar scrub, both Phase 2), at which point they earn a dedicated motion module. The durations stay in `tokens.css` and are read from there, so a duration is never stated twice.
 
 ### 2.8 Spacing
 
@@ -171,15 +171,17 @@ Each component exists for a stated reason. Measurements live in tokens.
 
 ### 4.1 Bench (master scene)
 
-The landing surface: the baked master still of the full bench, all four objects present and lit. It is an image plus an interaction layer, not a live 3D canvas. It always offers a way out (there is no way to get "stuck" on the bench, it is the home).
+The landing surface: the full bench, all four objects present and lit. **Amended by D20:** this is a live 3D canvas, not an image plus an interaction layer. It always offers a way out (there is no way to get "stuck" on the bench, it is the home), and it is the only state that is reachable with no hash.
 
 ### 4.2 Hotspot
 
 An invisible interactive region positioned over each object. On hover it triggers a cold rim-glow on that object (the object becomes brighter and whiter, per the law) to signal interactivity without a "click here" label. Diegetic: prefer a small brass-plaque style label on the bench over floating UI text.
 
-### 4.3 Transition (crossfade plus scale)
+### 4.3 Transition (camera move)
 
-The faked camera fly-through. A GSAP timeline crossfades and scales from the master still to the object's framed still, with a depth-of-field blur on the outgoing layer as the destination resolves. Fast-in, slow-out. This is the cheapest honest implementation of the doc's "macro-zoom" and is the Phase 1 default; a pre-rendered clip is a later, optional upgrade for the hero microscope move only.
+**Amended by D20: this was a faked crossfade plus scale and is now a real camera move.** A GSAP timeline animates the camera position and its look-at target together, from the bench framing to the object's framing. Animating position alone and re-pointing at the end produces a visible snap at the finish, so both are tweened. Fast-in, slow-out, no overshoot, duration from the motion tokens. `prefers-reduced-motion` cuts straight to the destination, and so does the first paint, which is an arrival rather than a transition.
+
+The old crossfade remains a documented fallback: stills can be captured from this same scene at any time if the live move disappoints.
 
 ### 4.4 Viewfinder mask
 
@@ -281,9 +283,11 @@ At exactly 215 the composite lands at 241 and reproduces the same ratios as the 
 
 ### 10.2 The quiet zone
 
-The framed still is a backdrop, not a picture. Section 2.5 forbids stacking frost on frost, which removes every CSS remedy for a bad backdrop: darkening the console violates Invariant 1.1, pushing the frost opaque destroys the material, a scrim under the text is a second frost, and lightening the ink violates Section 2.2. The only fix is a re-render, so the constraint has to be met in the render.
+Whatever sits behind a console is a backdrop, not a picture. Section 2.5 forbids stacking frost on frost, which removes every CSS remedy for a bad backdrop: darkening the console violates Invariant 1.1, pushing the frost opaque destroys the material, a scrim under the text is a second frost, and lightening the ink violates Section 2.2. The fix has to be in the scene, not in CSS.
 
-Every framed still reserves a quiet zone:
+Since D20 that fix is cheap (move a light, move the camera, adjust a material) where it used to mean a re-render, but the rule must now hold **in every camera state** rather than in one baked frame.
+
+Every object framing reserves a quiet zone:
 
 - **Extent:** the central 76% of width by 68% of height, plus a margin of one blur radius beyond the console edge. `--frost-1-blur` is 20px, so extend the zone about 40px past the console. `backdrop-filter` samples outside the element's bounds, so detail just outside the console bleeds inward.
 - **Value:** 215 to 245, per 10.1.
@@ -302,6 +306,13 @@ Composition resolves this rather than fighting it: high-frequency geometry belon
 - **No mint in the render, at all.** `--accent` means "this is active or interactive". Putting hue 150 to 190 in the scenery retires that meaning and turns the accent into decoration, which Section 2.3 forbids in the same sentence that defines it.
 - **No baked UI.** No text, HUD crosshairs, coordinate marks, glow rings, focus rings, or plaque type in the render. All of that is CSS driven by tokens, and baking it makes it un-tokenizable (Invariant 1.6).
 
-### 10.4 Export
+### 10.4 Model export
 
-Export sRGB, always. Spline and macOS will hand back a Display P3 tagged PNG by default, which renders more saturated in the browser and no longer matches the tokens beside it. Add about 1% dither: large near-white gradients band visibly in 8-bit, and this scene is almost entirely large near-white gradients.
+**Amended by D20: the deliverable is models, not stills.**
+
+- **Export-ready optimised `.glb` only.** Source files stay out of this public repository (D21).
+- **Origin at the object's base, Y up**, so a model drops into the transform the scene already expects without re-tuning its camera state.
+- **Keep materials simple.** The scene applies its own materials from the token bridge, so a baked-in colour is an Invariant 1.6 violation the moment it lands.
+- **Silhouette over detail.** Hotspots and hover glow read off the silhouette, and each object must stay visually separable from its neighbours in the bench framing.
+
+If the 1.2 fallback is ever taken and stills are captured from this scene, the old export rules reapply: sRGB always (a Display P3 tagged PNG renders more saturated in the browser and no longer matches the tokens beside it), and about 1% dither, because large near-white gradients band visibly in 8-bit and this scene is almost entirely large near-white gradients.
