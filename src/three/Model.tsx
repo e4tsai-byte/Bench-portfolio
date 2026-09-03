@@ -60,6 +60,17 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
   // Small area, and the one place a brighter tier earns its keep: it separates
   // the lenses from the shell they sit in.
   ms_lens: { color: 'ground2', roughness: 0.08, metalness: 0.3 },
+  // The disc at the floor of each eyepiece bore: the zoom-into-the-eyepiece
+  // transition ends on it, so it must be the brightest thing in frame at the
+  // moment of handoff to a near-white console. Small area, so D16's 235 ceiling
+  // on BROAD surfaces does not bind and this needs no waiver.
+  //
+  // NOTE: authored emissive in Blender, but emission is dropped here along with
+  // every other baked property - this loader rebuilds each material from tokens.
+  // So it renders as the brightest flat tier, not as a light source. Making it
+  // actually glow needs an emissive field on MaterialSpec or a light seated at
+  // the bore, and is a deliberate decision, not a side effect of this map.
+  ms_eye_glow: { color: 'ground2', roughness: 0.25, metalness: 0 },
   ms_knob: { color: 'ink2', roughness: 0.55, metalness: 0 },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },
   ms_stage: { color: 'ink1', roughness: 0.4, metalness: 0 },

@@ -95,6 +95,16 @@ Stated here rather than buried.
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
 
+### 2026-09-03 (binocular head, built for the eyepiece transition)
+
+- **The microscope now has a dual eyepiece.** A prism housing with two tubes splayed 11 degrees, each a lathed eyecup with a real bored aperture and a bright disc seated at the bore floor. Built because the zoom-into-the-eyepiece transition needs something the camera can actually enter; the previous single ocular was a solid cylinder with a lens disc perched on top, with nothing to fly into.
+- **Fixed a defect the rebuild exposed.** In the single-ocular model the eyepiece was never coaxial with its tube: the tube's mesh axis ran `(0, -0.53, 0.848)`, leaning backward, while the eyepiece sat on `(0, +0.53, 0.848)`, leaning forward, 0.64 apart in Y. Earlier sessions had been closing the visible seam with overlap tweaks, which treated the symptom. Both tubes are now built on pivot empties, so each axis is defined once and the tube, eyecup, bore disc, and target all inherit it.
+- **The bore is bright, not black, and that was a judgement call.** A real ocular bore is dark, but Invariant 1.1 makes a dark surface a defect, and pushing into a black hole would flash dark immediately before landing on a luminous white console. The bore floor is therefore the brightest tier available, so the push-in resolves white-on-white. One material entry to reverse.
+- **A centred push has no target, and the model cannot fix that.** Tested in Blender: a camera aimed between the two oculars passes *between* the tubes at close range and ends on the prism housing, both bores diverging out of frame. A binocular head has two apertures and solid metal between them. Aiming down one ocular gives a single bright disc filling the frame. The transition has to commit to one side, or fire the crossfade early while both discs are still in view. The model ships `Eyepoint_L`, `Eyepoint_R`, and a centred `Eyepoint_Target` as `.glb` nodes so the rig can choose; **none of them is wired yet.**
+- **`ms_eye_glow` is mapped, and does not glow.** It takes `--ground-2`, the brightest tier, which needs no waiver because D16's 235 ceiling governs *broad* surfaces and this is a small disc. But it was authored emissive in Blender and `Model.tsx` rebuilds every material from tokens, so emission is discarded along with all other baked properties. It renders as the brightest flat tier, not as a light source. Making it actually emit needs an emissive field on `MaterialSpec` or a light seated at the bore, and that is a decision, not a side effect.
+- Triangles went 784 to 2,244; the two lathed eyepieces are the whole cost. 31 meshes, 5 empties, 140K on disk.
+- **Unverified:** the bore disc's luminance at the transition's endpoint, which cannot be measured until the transition exists and the camera actually gets there.
+
 ### 2026-09-03 (model promoted to main)
 
 - Merged `wip/blender-microscope-model`. `microscope.glb` is on `main` and in the build.
