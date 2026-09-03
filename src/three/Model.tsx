@@ -49,9 +49,16 @@ export function modelUrl(name: string): string | undefined {
 type MaterialSpec = { color: keyof Palette; roughness: number; metalness: number }
 
 const MATERIAL_MAP: Record<string, MaterialSpec> = {
-  ms_shell: { color: 'ground2', roughness: 0.42, metalness: 0.05 },
+  // Broad surfaces take --ground-1, never --ground-2. D16 requires broad object
+  // surfaces to peak at 235 so the CSS hover glow has somewhere to go, and
+  // --ground-2 is pure white: under this lighting rig it measured a peak of 251
+  // with 12.4% of pixels over the limit. --ground-2 is reserved here for small
+  // specular parts, where "broad" does not apply.
+  ms_shell: { color: 'ground1', roughness: 0.42, metalness: 0.05 },
   ms_shell_dark: { color: 'ink3', roughness: 0.5, metalness: 0.05 },
   ms_metal: { color: 'ground1', roughness: 0.3, metalness: 0.85 },
+  // Small area, and the one place a brighter tier earns its keep: it separates
+  // the lenses from the shell they sit in.
   ms_lens: { color: 'ground2', roughness: 0.08, metalness: 0.3 },
   ms_knob: { color: 'ink2', roughness: 0.55, metalness: 0 },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },

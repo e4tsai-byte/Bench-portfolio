@@ -119,6 +119,9 @@ Bench-portfolio/
   tools/
     audit.mjs                    static token + source audit (npm run audit)
     composite-audit.js           browser-only composite contrast check
+  wip/                           scratch, never imported by src/ or shipped
+    README.md                    what is parked here and the promotion bar
+    models/                      exploratory 3D artefacts, not candidate assets
   wip/                           scratch artefacts, never imported by src/
     README.md                    what is in here and why it is not an asset
     models/                      exploratory .glb, not candidates under 1.3

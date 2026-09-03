@@ -95,6 +95,15 @@ Stated here rather than buried.
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
 
+### 2026-09-03 (model promoted to main)
+
+- Merged `wip/blender-microscope-model`. `microscope.glb` is on `main` and in the build.
+- **Checked the promotion against the bar `wip/README.md` set, rather than treating "merge" as a waiver.** Three of its four conditions were satisfied by the token mapping and the filename contract. The fourth, the `DESIGN.md` Section 10 luminance rule, **had not been checked and failed when it was.**
+- **The measured failure:** with the shell mapped to `--ground-2` (pure white), the rendered peak was 251 with **12.42% of object pixels above the D16 ceiling of 235**, which would have left the CSS hover glow no headroom. Cause was mine, not the model's. Broad surfaces moved to `--ground-1` and the lighting rig trimmed: peak now 248 with **1.27% over 235**, all of it small specular and lens area, and zero clipped pixels. Zero warm pixels, so blue is greater than or equal to red everywhere.
+- Measured with a temporary `preserveDrawingBuffer` flag, since a WebGL context discards its buffer after compositing and `readPixels` returns nothing. The flag has a real performance cost and was reverted.
+- `wip/README.md` now records the promotion and answers each of its own checklist items, including the one it did not anticipate: the model was authored facing -Z.
+- **Still unmeasured, and stated rather than glossed:** the whole-frame mean in Section 10.1 (the figures above cover rendered geometry only, not the composite with the page ground), and the Section 10.2 console legibility check, which needs the microscope console to exist.
+
 ### 2026-09-03 (first model wired)
 
 - **`microscope.glb` is in the scene.** The owner's exploratory low-poly Blender draft moved from `wip/` into `src/assets/models/` and now renders in place of the primitive.

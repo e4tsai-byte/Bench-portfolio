@@ -173,19 +173,19 @@ export default function BenchScene({
 
       {/* High-key rig. Key to fill is roughly 1.8:1 per DESIGN.md 10.3: high-key
           is a low contrast ratio, not merely a bright image. */}
-      <ambientLight intensity={1.5} color={palette.ground1} />
+      <ambientLight intensity={1.15} color={palette.ground1} />
       <directionalLight
         position={[-4, 6, 5]}
-        intensity={2.1}
+        intensity={1.55}
         color={palette.ground2}
         castShadow
         shadow-mapSize={[2048, 2048]}
       />
-      <directionalLight position={[5, 4, 3]} intensity={1.2} color={palette.ground1} />
+      <directionalLight position={[5, 4, 3]} intensity={0.85} color={palette.ground1} />
       {/* Rim, from behind, carving the cold silhouette edge. */}
-      <directionalLight position={[0, 4, -7]} intensity={1.8} color={palette.ground2} />
+      <directionalLight position={[0, 4, -7]} intensity={1.25} color={palette.ground2} />
       {/* Fake bounce off the white bench: the rasteriser gives us none. */}
-      <pointLight position={[0, 0.4, 3]} intensity={2.2} color={palette.ground1} />
+      <pointLight position={[0, 0.4, 3]} intensity={1.5} color={palette.ground1} />
 
       {/* Bench slab. */}
       <mesh position={[0, -0.05, 0]} receiveShadow>
