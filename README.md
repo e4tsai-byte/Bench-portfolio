@@ -22,7 +22,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Crossfade-plus-scale transition (GSAP) | **Planned** |
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
-| Research content (`content/research.ts`) | **Implemented** (3 items from the owner's resume); real PDAC abstract still **Planned** |
+| Research content (`content/research.ts`) | **Implemented** (3 items, publication citation verified against Crossref); real PDAC abstract still **Planned** |
 | Spline master + microscope stills | **Planned** (Placeholder art used until produced) |
 | Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
 | Deployment to Vercel | **Planned** |
@@ -97,7 +97,9 @@ Newest first. Add a dated entry at the end of every phase or meaningful change, 
 - **Populated `src/content/research.ts`** with three items transcribed from the owner's 2026 resume: the Academia Sinica Schwann-cell / PanIN 3D histology work, the Cancerfree Biotech co-culture and hardware work, and the genital psoriasis systematic review. The resume is the owner's own authoritative statement of these claims, so it satisfies Invariant 1.5. Nothing was inferred or embellished.
 - **No contact details were committed.** This repository is public and the resume header carries a phone number, so no phone, address, or contact information of any kind entered the repo. Verified by sweep.
 - **The `abstract` field is honest about what it holds.** `PRODUCT.md` Section 10 specifies it as full abstract text. What is there is an expanded description drawn from the resume, because the genuine PDAC/Schwann-cell abstract has still never been supplied. The field is documented as a known gap rather than padded to look finished.
-- **Two claims flagged for the owner to confirm before they go outward** (Invariant 1.9): the publication carries a manuscript number ending `.R1`, which indicates a revision rather than a final citation, so its published status needs confirming; and one award name in the source reads `BioTechathalon`, left exactly as written rather than silently corrected.
+- **Publication status resolved, and verified rather than taken on trust.** The resume carried only the manuscript number `BJD-2024-1480.R1`, a revision identifier, which was flagged as not safe to present as a final citation. The owner supplied the DOI, and it was checked against Crossref: `10.1093/bjd/ljae370`, British Journal of Dermatology 192(2), 357 to 359, published 2024-09-30, with the owner listed as third author. Volume, issue, pages, and date came from the publisher, not from the resume, which did not have them.
+- **One inferred value corrected by that check.** The systematic review's `org` had been inferred from context rather than sourced. Crossref shows the study is based in the Department of Dermatology at Chang Gung Memorial Hospital, Linkou, and the field now says so.
+- **Still flagged for the owner** (Invariant 1.9): one award name in the source reads `BioTechathalon`, left exactly as written rather than silently corrected.
 - Phase 2 content files (`publications.ts`, `patents.ts`, `timeline.ts`, `aiProjects.ts`) remain unpopulated, per `CLAUDE.md` Section 4. The resume now contains everything needed to fill all four whenever their phase arrives.
 
 ### 2026-09-03

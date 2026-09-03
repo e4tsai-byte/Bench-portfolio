@@ -9,6 +9,13 @@
  * here is inferred, expanded, or embellished. Invariant 1.5 makes claim
  * accuracy blocking, so if a detail is not in the source it is not here.
  *
+ * One exception, in the strict direction: the systematic review's citation was
+ * verified against Crossref via its DOI, which supplied the volume, issue,
+ * pages, and publication date that the resume did not carry. That check also
+ * corrected this file's `org` for that item, which had been inferred from
+ * context rather than sourced. Publisher metadata outranks both the resume and
+ * any inference of mine for a published citation.
+ *
  * DELIBERATELY ABSENT: no phone number, no postal address, no contact details
  * of any kind. This repository is public.
  *
@@ -75,20 +82,25 @@ export const research: ResearchItem[] = [
   },
   {
     id: 'genital-psoriasis-systematic-review',
-    title: 'Systematic review: biologics and small molecule inhibitors in genital psoriasis',
-    role: 'Co-author',
-    org: 'Chang Gung Memorial Hospital collaboration',
+    title: 'Systematic review: biologics and small-molecule inhibitors in genital psoriasis',
+    role: 'Co-author (third author)',
+    org: 'Chang Gung Memorial Hospital, Department of Dermatology, Linkou',
     period: '2024',
     field: ['Wet-lab'],
     abstract:
       'Screened research papers and conducted comprehensive literature searches. ' +
       'Collaborated with co-authors to assess risk of bias across selected studies, ' +
-      'ensuring methodological rigor and reproducibility of findings. Published as ' +
-      'Lai, C.-C., Shao, S.-C., Tsai, E.T.K., and Chi, C.-C. (2024), Efficacy and ' +
-      'safety of biologics and small molecule inhibitors in treating genital psoriasis: ' +
-      'a systematic review of randomized controlled trials.',
+      'ensuring methodological rigor and reproducibility of findings. ' +
+      'Published as Lai, C.-C., Shao, S.-C., Tsai, E.T.K., and Chi, C.-C. (2024), ' +
+      '"Efficacy and safety of biologics and small-molecule inhibitors in treating ' +
+      'genital psoriasis: a systematic review of randomized controlled trials", ' +
+      'British Journal of Dermatology 192(2), 357 to 359.',
     summary:
       'Screened the literature and assessed risk of bias for a systematic review of ' +
-      'randomized controlled trials in genital psoriasis.',
+      'randomized controlled trials in genital psoriasis, published in the British ' +
+      'Journal of Dermatology.',
+    links: [
+      { label: 'DOI: 10.1093/bjd/ljae370', url: 'https://doi.org/10.1093/bjd/ljae370' },
+    ],
   },
 ]
