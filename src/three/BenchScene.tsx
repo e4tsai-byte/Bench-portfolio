@@ -161,15 +161,22 @@ const OBJECT_MESH: Record<BenchObject, (p: ReturnType<typeof readPalette>) => Re
 export default function BenchScene({
   state,
   onSelect,
+  onDiveReveal,
+  isUserInitiated,
 }: {
   state: BenchState
   onSelect: (object: BenchObject) => void
+  /** See CameraRig.tsx: fired partway through the eyepiece dive (D25). */
+  onDiveReveal?: () => void
+  /** See CameraRig.tsx's isUserInitiated: whether MICROSCOPE, if that is the
+   * current state, was reached by an actual click (D25). */
+  isUserInitiated?: boolean
 }) {
   const palette = useMemo(() => readPalette(), [])
 
   return (
     <>
-      <CameraRig state={state} />
+      <CameraRig state={state} onDiveReveal={onDiveReveal} isUserInitiated={isUserInitiated} />
 
       {/* High-key rig. Key to fill is roughly 1.8:1 per DESIGN.md 10.3: high-key
           is a low contrast ratio, not merely a bright image. */}

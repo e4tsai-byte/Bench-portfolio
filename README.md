@@ -8,8 +8,8 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), in progress. Stages A through D are done, including the microscope console; hover-glow, onboarding, and deployment are next.**
-**Last updated: 2026-09-03.**
+**Current phase: Phase 1 (vertical slice), in progress. Stages A through D are done, including the microscope console and the eyepiece-dive arrival; hover-glow, onboarding, and deployment are next.**
+**Last updated: 2026-09-04.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
 
@@ -22,6 +22,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Hover-glow on objects | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Camera transitions (GSAP), reduced-motion path | **Implemented** (verified in-browser) |
+| Eyepiece-dive MICROSCOPE arrival, whiteout, direct-link/reduced-motion safety | **Implemented** (verified in-browser) |
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Implemented** (verified in-browser: disclosure, DOI link, keyboard path, empty state) |
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
@@ -94,6 +95,14 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-04 (the eyepiece dive: MICROSCOPE arrival ends in a real whiteout)
+
+- **Built the eyepiece dive.** The MICROSCOPE arrival is now a three-leg camera timeline: the existing bench-to-head move, a re-alignment onto the ocular's own axis, and a committed push through the disc, ending fully white with no bench visible. Committed to the left ocular; the model's own geometry rules out a centred push. Full reasoning and the specialist review that planned it (motion-engineer on the choreography, brand-designer on the palette legality of a full-white terminal frame) recorded as D25 in `CLAUDE.md` Section 7.
+- **The whiteout is a real `--ground-2` overlay plus a neutral emissive on `ms_eye_glow`**, not left to render precision alone, and it persists for the whole visit rather than fading back out, so "no bench visible" holds for as long as the user is there.
+- **`camera.near` lowered from the R3F default (0.1) to 0.01.** The dive ends close enough to the disc that the default near plane would have clipped the terminal geometry away at exactly the moment it needed to fill frame. A real bug this feature exposed, not specific to the dive itself.
+- **Found and discarded a wrong diagnosis, on purpose, because the story is worth keeping.** The first fix for a real bug (reduced motion and direct links wrongly showing the full whiteout) targeted React 18 StrictMode's double-invoke of initial-mount effects. That diagnosis was plausible and wrong, confirmed wrong by disabling StrictMode entirely and watching the bug persist unchanged. The actual cause: `location.hash` is not always synchronously readable on the very first render in this environment, so a direct link can genuinely commit `state: BENCH` before self-correcting to `state: MICROSCOPE` a tick later, a real second commit no mount-timing check can tell apart from an actual click. The fix that worked tracks whether MICROSCOPE was reached by an actual click (`hasUserNavigated`, set only inside the click handler) and gates the dive on that, not on any notion of "was this the first render." Full account in `CLAUDE.md` Section 7, D25, because the lesson (check what differs about the state SEQUENCE before reaching for a framework lifecycle explanation) outlasts this one bug.
+- Verified in-browser across all four paths: a genuine click plays the full dive and ends white; a direct `#microscope` link lands instantly on the resting three-quarter view with no whiteout; forced `prefers-reduced-motion` does the same; and Back-to-Bench correctly returns from the white state and clears the whiteout.
 
 ### 2026-09-03 (the microscope console: Phase 1's actual payload)
 

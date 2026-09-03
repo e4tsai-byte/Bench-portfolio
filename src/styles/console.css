@@ -157,7 +157,9 @@
 
 .scene__ui {
   position: relative;
-  z-index: 1;
+  /* Above .whiteout (z-index 1, D25) so console content still shows once the
+     eyepiece dive reveals it, not just above the plain canvas. */
+  z-index: 2;
   padding: var(--sp-8);
   pointer-events: none;
 }
@@ -172,7 +174,7 @@
    this there is no keyboard path in at all (DESIGN.md 3, item 3). */
 .bench-keys {
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   left: var(--sp-8);
   bottom: var(--sp-8);
 }
@@ -464,4 +466,53 @@ button.card {
 
 .specimen-reading__close:hover {
   color: var(--ink-0);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Eyepiece dive whiteout (D25)                                             */
+/*                                                                          */
+/* Two layers, cross-dissolving in step with the camera's final push        */
+/* (three/CameraRig.tsx's onDiveReveal, fired at the start of the dive's    */
+/* last leg): a full-viewport --ground-2 overlay guarantees a literal, real */
+/* pure-white handoff regardless of lighting variance across devices        */
+/* (brand-designer ruling, D25), and the microscope console fades in over   */
+/* it so "the white screen IS the viewfinder" reads as one continuous       */
+/* dissolve rather than a cut. Both are driven by one CSS class toggle, not */
+/* GSAP, per DESIGN.md 2.7: this is exactly the kind of move GSAP does not  */
+/* own, so it is a CSS transition using the matching --dur-settle/          */
+/* --ease-out-3 tokens instead.                                            */
+/* ------------------------------------------------------------------------ */
+
+.whiteout {
+  position: fixed;
+  inset: 0;
+  /* Between .scene__canvas (0) and .scene__ui/.bench-keys (2): above the
+     plain canvas so it can cover it, below the console so cards, HUD, and
+     BackToBench still render on top of it once revealed. */
+  z-index: 1;
+  background-color: var(--ground-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-settle) var(--ease-out-3);
+}
+
+.whiteout--visible {
+  opacity: 1;
+}
+
+/* The console's own fade-in. Mounted immediately with the MICROSCOPE state
+   (so nothing waits on a mount-after-complete callback, which DESIGN.md 4.3
+   already rejects for the position/target split and would be the same
+   anti-pattern here), starting invisible and dissolving in on the same
+   schedule as .whiteout. Reduced motion, first paint, and a direct
+   #microscope link never apply this class at all: arrivalPhase starts
+   'arrived' for those, so the console is simply visible from the first
+   frame, exactly like every other state (D25). */
+.console-arrival {
+  opacity: 1;
+  transition: opacity var(--dur-settle) var(--ease-out-3);
+}
+
+.console-arrival--diving {
+  opacity: 0;
 }

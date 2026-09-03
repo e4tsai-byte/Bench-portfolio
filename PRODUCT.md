@@ -97,6 +97,7 @@ Bench-portfolio/
       CameraRig.tsx              (camera state per bench state, GSAP moves)
       Model.tsx                  (.glb loader, token material mapping, seating)
       palette.ts                 (token bridge: tokens.css into the scene)
+      motion.ts                  (EASE + the eyepiece-dive keyframes, D25)
     assets/
       models/                    (export-ready .glb only; filenames are the 1.3 contract)
       renders/                   (baked stills, only if the 1.2 fallback is taken)

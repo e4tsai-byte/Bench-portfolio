@@ -24,7 +24,7 @@
 import { useMemo } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import { Box3, Color, Mesh, MeshStandardMaterial, Vector3 } from 'three'
 import { readPalette, type Palette } from './palette'
 
 /**
@@ -46,7 +46,23 @@ export function modelUrl(name: string): string | undefined {
  * the design system: renaming a material here is a design decision, renaming it
  * in Blender is an authoring decision, and both are visible.
  */
-type MaterialSpec = { color: keyof Palette; roughness: number; metalness: number }
+type MaterialSpec = {
+  color: keyof Palette
+  roughness: number
+  metalness: number
+  /**
+   * Optional, and deliberately rare. Emissive colour comes from the SAME
+   * token bridge as everything else (never a raw hex), and this field exists
+   * for exactly one material today: `ms_eye_glow`, the eyepiece-transition
+   * terminal disc (brand-designer ruling, CLAUDE.md D25). Reaching for this
+   * for any other material is a new design decision, not a precedent this
+   * one field sets automatically. Neutral-white emissive carries zero
+   * saturation, so it does not trip DESIGN.md 10.3's "no emissive saturated
+   * material" rule, which targets colour, not brightness.
+   */
+  emissive?: keyof Palette
+  emissiveIntensity?: number
+}
 
 const MATERIAL_MAP: Record<string, MaterialSpec> = {
   // Broad surfaces take --ground-1, never --ground-2. D16 (raised to 245 by
@@ -62,17 +78,28 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
   // Small area, and the one place a brighter tier earns its keep: it separates
   // the lenses from the shell they sit in.
   ms_lens: { color: 'ground2', roughness: 0.08, metalness: 0.3 },
-  // The disc at the floor of each eyepiece bore: the zoom-into-the-eyepiece
-  // transition ends on it, so it must be the brightest thing in frame at the
-  // moment of handoff to a near-white console. Small area, so D16's ceiling
-  // on BROAD surfaces (245, since D22) does not bind and this needs no waiver.
+  // The disc at the floor of each eyepiece bore. D16's ceiling on BROAD
+  // surfaces (245, since D22) does not bind here in the resting HEAD framing,
+  // where this is a small area among other geometry, per D22's own text.
   //
-  // NOTE: authored emissive in Blender, but emission is dropped here along with
-  // every other baked property - this loader rebuilds each material from tokens.
-  // So it renders as the brightest flat tier, not as a light source. Making it
-  // actually glow needs an emissive field on MaterialSpec or a light seated at
-  // the bore, and is a deliberate decision, not a side effect of this map.
-  ms_eye_glow: { color: 'ground2', roughness: 0.25, metalness: 0 },
+  // Since D25, this disc is ALSO the terminal frame of the eyepiece-dive
+  // transition (CameraRig's MICROSCOPE_DIVE, three/motion.ts), where the
+  // camera ends close enough that it fills the entire screen. Screen-space
+  // coverage at that moment is what D16's headroom concern actually measures,
+  // and "small area" stops being true in that sense the instant it fills
+  // frame (DESIGN.md 10.5). The emissive field below is what makes that
+  // terminal frame read as "the light itself gets closer" during the last
+  // stretch of the dive, not just a flatly-lit surface happening to fill the
+  // screen. Neutral --ground-2 emissive, same token the base colour already
+  // uses: zero saturation, so DESIGN.md 10.3's "never emissive saturated"
+  // rule (which protects the accent hue's meaning) does not apply.
+  ms_eye_glow: {
+    color: 'ground2',
+    roughness: 0.25,
+    metalness: 0,
+    emissive: 'ground2',
+    emissiveIntensity: 0.6,
+  },
   ms_knob: { color: 'ink2', roughness: 0.55, metalness: 0 },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },
   ms_stage: { color: 'ink1', roughness: 0.4, metalness: 0 },
@@ -118,11 +145,15 @@ export default function Model({
         )
       }
 
-      const { color, roughness, metalness } = spec ?? FALLBACK
+      const { color, roughness, metalness, emissive, emissiveIntensity } = spec ?? FALLBACK
       child.material = new MeshStandardMaterial({
         color: palette[color],
         roughness,
         metalness,
+        ...(emissive && {
+          emissive: new Color(palette[emissive]),
+          emissiveIntensity: emissiveIntensity ?? 1,
+        }),
       })
     })
 
