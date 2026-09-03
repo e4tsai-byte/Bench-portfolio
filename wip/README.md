@@ -71,8 +71,8 @@ cylinder with a lens disc on top — nothing to fly into.
 The four promotion conditions above still hold for the new geometry: same
 material names, same token mapping, same facing convention, no new mint. One
 addition to `MATERIAL_MAP`, `ms_eye_glow`, took `--ground-2` without a waiver,
-because D16's 235 ceiling governs *broad* surfaces and this is a small disc —
-the same exemption the lens material already used.
+because D16's ceiling (245, since D22) governs *broad* surfaces and this is a
+small disc — the same exemption the lens material already used.
 
 Two things this model raises that promotion did not settle:
 

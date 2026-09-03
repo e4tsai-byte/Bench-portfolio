@@ -95,6 +95,12 @@ Stated here rather than buried.
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
 
+### 2026-09-03 (D22: broad-surface luminance ceiling raised)
+
+- **`DESIGN.md` 10.3's broad-object-surface peak moves from 235 to 245**, at the owner's request. The reasoning behind 235 (headroom for a hover/active brightness bump) was written for the pre-D20 pipeline, where the render was a baked still and the bump was a CSS filter over it. Checked before writing this: no hover or glow effect exists anywhere in `three/` or `components/` yet, for the microscope or for the coming-soon glow on the Phase 2 objects (Invariant 1.7). The number is provisional until one is built and measured against it.
+- **245 was not invented for this.** It is the top of the existing `DESIGN.md` 10.1 composite target range, so reusing it kept the change to two dependent bullets in 10.3 (the ceiling itself, and the baked-glow ramp's floor moved to match) rather than new luminance math.
+- Recorded as `CLAUDE.md` D22, with an inline amendment note on D16 rather than an edit to D16's own text, matching how this file treats superseded figures elsewhere. `Model.tsx`'s two comments citing 235 are corrected; `wip/README.md`'s historical measurements (251 peak / 12.42% over, taken against the 235 ceiling in effect then) are left as they were, since rewriting a past measurement to match a later rule would misstate what was actually measured.
+
 ### 2026-09-03 (binocular head, built for the eyepiece transition)
 
 - **The microscope now has a dual eyepiece.** A prism housing with two tubes splayed 11 degrees, each a lathed eyecup with a real bored aperture and a bright disc seated at the bore floor. Built because the zoom-into-the-eyepiece transition needs something the camera can actually enter; the previous single ocular was a solid cylinder with a lens disc perched on top, with nothing to fly into.
