@@ -22,6 +22,44 @@ import type { BenchObject, BenchState } from '../state/benchMachine'
 import { BENCH_OBJECTS, isWiredThisPhase } from '../state/benchMachine'
 import { readPalette } from './palette'
 import CameraRig from './CameraRig'
+import Model, { modelUrl } from './Model'
+
+/**
+ * Target height per object, in world units. A model is scaled to this from its
+ * own bounding box, so the camera states stay valid across a re-export at a
+ * different scale (Invariant 1.3).
+ */
+const OBJECT_HEIGHT: Record<BenchObject, number> = {
+  MICROSCOPE: 1.45,
+  NOTEBOOK: 0.12,
+  CALENDAR: 0.7,
+  COMPUTER: 0.78,
+}
+
+/**
+ * Facing correction, in radians about Y.
+ *
+ * The scene convention is that a model's FRONT faces +Z, toward the camera's
+ * resting side. `microscope.glb` was authored facing -Z (its column sits at
+ * +z and its stage, nosepiece, and eyepiece at -z), so it is turned here
+ * rather than in the source file: a rotation is a placement decision and
+ * belongs in the scene, and correcting it here costs nothing if the model is
+ * later re-exported the other way round.
+ */
+const OBJECT_FACING: Record<BenchObject, number> = {
+  MICROSCOPE: Math.PI,
+  NOTEBOOK: 0,
+  CALENDAR: 0,
+  COMPUTER: 0,
+}
+
+/** Model filename per object. Absent file means the primitive is still in use. */
+const MODEL_NAME: Record<BenchObject, string> = {
+  MICROSCOPE: 'microscope',
+  NOTEBOOK: 'notebook',
+  CALENDAR: 'calendar',
+  COMPUTER: 'computer',
+}
 
 /** Object transforms. A real model drops in at the same transform. */
 const OBJECT_TRANSFORM: Record<BenchObject, [number, number, number]> = {
@@ -170,7 +208,15 @@ export default function BenchScene({
               : undefined
           }
         >
-          {OBJECT_MESH[object](palette)}
+          {/* Invariant 1.3: the real model wins the moment the file exists, and
+              the primitive returns if it is removed. No code change either way. */}
+          {modelUrl(MODEL_NAME[object]) ? (
+            <group rotation={[0, OBJECT_FACING[object], 0]}>
+              <Model name={MODEL_NAME[object]} targetHeight={OBJECT_HEIGHT[object]} />
+            </group>
+          ) : (
+            OBJECT_MESH[object](palette)
+          )}
         </group>
       ))}
     </>

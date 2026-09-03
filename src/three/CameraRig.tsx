@@ -43,7 +43,7 @@ interface CameraState {
  */
 export const CAMERA_STATES: Record<BenchState, CameraState> = {
   BENCH: { position: [0, 2.6, 7.2], target: [0, 0.5, 0] },
-  MICROSCOPE: { position: [0.35, 1.35, 2.35], target: [0.2, 0.95, -0.2] },
+  MICROSCOPE: { position: [0.55, 1.45, 3.25], target: [0.2, 0.72, -0.2] },
   NOTEBOOK: { position: [-1.9, 1.25, 2.1], target: [-2.0, 0.35, 0.35] },
   CALENDAR: { position: [2.5, 1.2, 2.2], target: [2.4, 0.55, -0.2] },
   COMPUTER: { position: [-3.6, 1.5, 2.2], target: [-3.7, 0.6, -0.4] },

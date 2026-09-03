@@ -107,6 +107,7 @@ Bench-portfolio/
     three/
       BenchScene.tsx             the R3F scene: lights, objects, materials
       CameraRig.tsx              camera state per bench state, GSAP moves
+      Model.tsx                  .glb loader, token material mapping, seating
       palette.ts                 token bridge, reads tokens.css into the scene
     assets/
       models/                    export-ready .glb only; filenames are the 1.3 contract

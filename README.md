@@ -25,7 +25,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Microscope console (viewfinder, specimen cards, HUD crosshairs) | **Planned** |
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
-| Owner's 3D models (`assets/models/*.glb`) | **Planned** (Placeholder primitive geometry in use until delivered) |
+| Owner's 3D models (`assets/models/*.glb`) | **Placeholder** (`microscope.glb` is an exploratory low-poly draft, wired and rendering); notebook, calendar, computer still **Planned** |
 | Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
@@ -94,6 +94,16 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03 (first model wired)
+
+- **`microscope.glb` is in the scene.** The owner's exploratory low-poly Blender draft moved from `wip/` into `src/assets/models/` and now renders in place of the primitive.
+- **Implemented the Invariant 1.3 swap for real** rather than describing it. `Model.tsx` discovers models with `import.meta.glob`, so dropping `microscope.glb` into `src/assets/models/` replaces the primitive with no code change, and deleting it brings the primitive back.
+- **Materials are mapped by name, not flattened.** A `.glb` carries baked colours and knows nothing about `tokens.css`, so the model's material *names* are treated as the contract and their colours come from the token bridge: the author decides which parts differ, the design system decides what colour they are. An unmapped name logs a loud warning rather than being silently accepted. All seven of this model's materials mapped cleanly, and its authored colours were already cool throughout (blue >= red), so it was on-brief before any correction.
+- **Models are seated, not trusted.** Scale is normalised to a target height and the base seated at y=0 from the model's own bounding box, so a re-export at a different scale or with a drifted origin still drops in without re-tuning camera states.
+- **Found a gap in my own model brief: facing.** The brief specified origin and up-axis but never which way an object should face, and this model was authored facing -Z, so the bench view showed the back of the instrument. The convention (front faces +Z) is now documented in `PRODUCT.md` Section 9 and `DESIGN.md` Section 10.4, with a compensating rotation in `BenchScene.tsx`, because facing is the one thing code cannot infer.
+- **`npm run audit` caught my own structural drift**, failing the build because `Model.tsx` was not in the `CLAUDE.md` Section 2 tree. Working as intended.
+- Retuned the microscope camera state against the real model. Final framing still needs a pass at a true desktop aspect ratio.
 
 ### 2026-09-03 (D20 follow-up: finish the doc sweep)
 

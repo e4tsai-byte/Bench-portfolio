@@ -95,6 +95,7 @@ Bench-portfolio/
     three/
       BenchScene.tsx             (the R3F scene: lights, objects, materials)
       CameraRig.tsx              (camera state per bench state, GSAP moves)
+      Model.tsx                  (.glb loader, token material mapping, seating)
       palette.ts                 (token bridge: tokens.css into the scene)
     assets/
       models/                    (export-ready .glb only; filenames are the 1.3 contract)
@@ -127,7 +128,7 @@ What is needed, in priority order:
 1. `bench.glb` and `microscope.glb` unblock Phase 1. The other three are Phase 2.
 2. Export-ready optimised `.glb` only. Source files stay out of this public repo (D21).
 3. Filenames are the swap contract (Invariant 1.3): `bench.glb`, `microscope.glb`, `notebook.glb`, `calendar.glb`, `computer.glb`. Never versioned, always overwritten in place.
-4. Model with the origin at the object's base and Y up, so a model drops into the transform the scene already expects without re-tuning the camera states.
+4. Model with the origin at the object's base, **Y up, and the object's front facing +Z**. The scene normalises scale and seats the base at y=0 from the model's own bounding box, so size and origin drift are handled automatically, but facing is not something code can infer. A model authored facing the wrong way is corrected by a documented rotation in `BenchScene.tsx` rather than silently, which is what `microscope.glb` currently needs.
 5. Keep materials simple. The scene applies its own materials from the token bridge, and any baked-in colour is an Invariant 1.6 violation the moment it lands.
 6. Silhouette matters more than detail: hotspots and hover glow read off the silhouette, and each object needs to stay visually separable from its neighbours in the bench view.
 

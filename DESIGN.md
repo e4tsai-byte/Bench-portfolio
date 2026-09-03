@@ -218,7 +218,7 @@ Desktop-first, by decision. Phase 1 targets a pointer and a large viewport.
 | Breakpoint | Behavior | Status |
 |---|---|---|
 | >= 1024px | Full experience: hotspots, zoom transitions, consoles | Phase 1 |
-| < 1024px | Reduced: master still with tappable hotspots that open panels directly, no cinematic transitions | **Planned** (later polish) |
+| < 1024px | Reduced: a static bench framing with tappable objects that open panels directly, no camera moves. Whether that is a captured still or the live scene with transitions disabled is an open call (D20 keeps both available) | **Planned** (later polish) |
 
 Mobile is explicitly out of Phase 1. It is a reduction of the desktop experience, never a co-equal redesign.
 
@@ -311,7 +311,7 @@ Composition resolves this rather than fighting it: high-frequency geometry belon
 **Amended by D20: the deliverable is models, not stills.**
 
 - **Export-ready optimised `.glb` only.** Source files stay out of this public repository (D21).
-- **Origin at the object's base, Y up**, so a model drops into the transform the scene already expects without re-tuning its camera state.
+- **Origin at the object's base, Y up, and the front facing +Z.** Scale and origin drift are normalised at load from the model's own bounding box, so those are forgiving. Facing is not: code cannot infer which side is the front, so a wrongly-facing model gets a documented rotation in `BenchScene.tsx` rather than a silent one.
 - **Keep materials simple.** The scene applies its own materials from the token bridge, so a baked-in colour is an Invariant 1.6 violation the moment it lands.
 - **Silhouette over detail.** Hotspots and hover glow read off the silhouette, and each object must stay visually separable from its neighbours in the bench framing.
 
