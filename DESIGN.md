@@ -249,3 +249,53 @@ A card inside a panel steps down one radius tier, so nested surfaces never share
 ## 9. Brand and bench identity
 
 The bench itself is the brand: the cool-white lab, the specimen-under-glass framing, the single cold accent. If a wordmark or favicon is needed, build it in pure SVG from the same tokens (a thin cold spine or a lens-arc motif), never a raster or an emoji. The identity is the restraint, not a logo.
+
+---
+
+## 10. Render constraints
+
+Sections 1 through 9 govern the interface and quietly assume the imagery beneath it. This section governs the imagery itself, because the baked stills are not decoration: they are the material the interface has to stay legible against, and a still that breaks these rules cannot be fixed in CSS.
+
+Enforcer: brand-designer (blocking), with scene-artist producing. These constraints were derived from the committed token values, not estimated.
+
+### 10.1 The luminance law
+
+The console is `--frost-1`, which is 66% white. The effective backdrop under console text is therefore `0.66 x 255 + 0.34 x bench`. Working backwards from the Section 2.2 ink floors gives a hard floor on the render itself.
+
+| Where | Constraint | Why |
+|---|---|---|
+| Bench under a `--frost-1` console | **203 absolute floor, 215 to 245 target** | The composite must reach 237 for `--ink-1` at 7:1 and `--ink-2` at 4.5:1 |
+| Bench under a `--frost-2` card | 166 absolute, 200+ target | The card is 80% white, so it forgives more |
+| Bench under a focus ring drawn directly on it | **234** | `--accent` needs 3:1 and gets no help from a frost layer |
+| Whole-frame black point | 90, and only in tiny contact shadows | Below this it stops being high-key |
+| Whole-frame mean | 210 | High-key is a histogram fact, not a mood |
+| Clipped pure white | at most 0.5% of pixels | Only on rim hairlines. Blown areas destroy the glow headroom in 10.3 |
+
+At exactly 215 the composite lands at 241 and reproduces the same ratios as the flat `--ground-1` swatch, so nothing in the token system has to change. The binding tier is `--ink-1` at 7:1, not `--ink-0`: a legible headline does not imply a legible label.
+
+### 10.2 The quiet zone
+
+The framed still is a backdrop, not a picture. Section 2.5 forbids stacking frost on frost, which removes every CSS remedy for a bad backdrop: darkening the console violates Invariant 1.1, pushing the frost opaque destroys the material, a scrim under the text is a second frost, and lightening the ink violates Section 2.2. The only fix is a re-render, so the constraint has to be met in the render.
+
+Every framed still reserves a quiet zone:
+
+- **Extent:** the central 76% of width by 68% of height, plus a margin of one blur radius beyond the console edge. `--frost-1-blur` is 20px, so extend the zone about 40px past the console. `backdrop-filter` samples outside the element's bounds, so detail just outside the console bleeds inward.
+- **Value:** 215 to 245, per 10.1.
+- **Flatness:** after a 20px blur, values across the zone vary by no more than 12 levels. This is separate from the darkness rule. A field averaging 220 that swings 190 to 250 makes one line of caption text drift from 7:1 to about 4:1 mid-sentence, which reads as a rendering bug rather than as a contrast problem.
+- **No hard edges crossing it.** A table lip or shadow boundary survives the blur as a soft luminance step, and text crossing that step visibly changes weight.
+
+Composition resolves this rather than fighting it: high-frequency geometry belongs in the outer band, and the illuminated stage field belongs in the centre, which is both the most legible backdrop and the most honest image of looking through a scope.
+
+### 10.3 Light, colour, and glow in the render
+
+- **Key to fill ratio at most 2:1.** High-key is a low contrast ratio, not merely a bright image. A 6:1 ratio with a bright key still yields deep shadows and fails 10.1.
+- **Nothing below 5500K, and no coloured lights.** Testable rule: for every neutral pixel, blue is greater than or equal to red, targeting a `B - R` difference of +4 to +14. The ink family is hue 213 and the accent is hue 168, both cyan-side; a warm ground places a yellow-orange field under cyan-side ink, which does not read as contrast, it reads as dirty.
+- **Cold rim light is a 1 to 3px hairline** tracing the silhouette, peaking at 245 to 255. If it reads as a soft aura, that is bloom, and bloom is prohibited: it produces exactly the coloured halo Section 1 rules out.
+- **Broad object surfaces peak at 235.** The hover glow is a CSS state, not baked. Render an object at near-white and a brightness increase has nowhere to go, so the hotspot feels dead.
+- **Baked glow is a white pool on a surface**, ramping about 235 to 255 with a short falloff. Never an emissive saturated material, never bloom, never a lens flare, and never a lit screen that is not white.
+- **No mint in the render, at all.** `--accent` means "this is active or interactive". Putting hue 150 to 190 in the scenery retires that meaning and turns the accent into decoration, which Section 2.3 forbids in the same sentence that defines it.
+- **No baked UI.** No text, HUD crosshairs, coordinate marks, glow rings, focus rings, or plaque type in the render. All of that is CSS driven by tokens, and baking it makes it un-tokenizable (Invariant 1.6).
+
+### 10.4 Export
+
+Export sRGB, always. Spline and macOS will hand back a Display P3 tagged PNG by default, which renders more saturated in the browser and no longer matches the tokens beside it. Add about 1% dither: large near-white gradients band visibly in 8-bit, and this scene is almost entirely large near-white gradients.

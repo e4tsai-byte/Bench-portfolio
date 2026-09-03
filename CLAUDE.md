@@ -99,6 +99,9 @@ Bench-portfolio/
       tokens.css                 all design tokens (loads first)
       base.css                   reset + ground
       console.css                frosted consoles and cards
+  tools/
+    audit.mjs                    static token + source audit (npm run audit)
+    composite-audit.js           browser-only composite contrast check
   public/
 ```
 
@@ -112,13 +115,18 @@ Styling load order is fixed and load-bearing: `tokens.css` before `base.css` bef
 npm install
 npm run dev         # local dev server (Vite)
 npm run typecheck   # real gate: catches broken imports and prop drift
+npm run audit       # design-system gate: token contrast, high-key law, tokens-only
 npm run build       # production build, runs typecheck first
 npm run preview     # serve the production build locally
 ```
 
 Typecheck is the mandatory gate. The production build runs it first and fails on any type error.
 
-**KNOWN GAP:** there is no automated visual/contrast audit yet. Until `tools/audit.mjs` exists, any change to `tokens.css` or to a console surface requires a manual before/after check in a live browser against the blurred bench, noted in the PR. Do not change a ground or ink token without confirming every text tier still meets its contrast floor (`DESIGN.md` Section 2 and Section 3).
+**KNOWN GAP, now narrowed but NOT closed.** `tools/audit.mjs` exists and runs as `npm run audit`. It mechanically enforces the token contrast floors against every ground, the high-key law on every ground, the tokens-only rule in components, the fixed stylesheet load order, and structural drift against the Section 2 tree. It exits non-zero on failure, so it is a real gate.
+
+What it still cannot do is the half that matters most once art exists: **the composite check**. Text sits on a translucent console over a *blurred* baked still, and `backdrop-filter` has no static equivalent, so the effective backdrop under a line of text can only be measured in a live browser against a real render. That check lives in `tools/composite-audit.js` and is pasted into the dev console by hand. It is written to report the **worst** pixel under each text element rather than the mean, because the mean is exactly what lets a bad render pass.
+
+So: `npm run audit` is mandatory alongside typecheck, and until the composite half is automated against a real render, **any change to `tokens.css` or to a console surface still requires a manual browser check noted in the PR**. Do not change a ground or ink token without confirming every text tier still meets its floor (`DESIGN.md` Sections 2, 3, and 10).
 
 ---
 
@@ -177,6 +185,12 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 ### 2026-08-31: Stage C, arbitration between Invariants 1.4 and 1.7
 
 - **D14. Reachability versus wiring.** Invariant 1.4 names all five states and says none may be unreachable or unexitable. Invariant 1.7 says the three Phase 2 objects are "not wired to a view" until their phase. Taken literally together they conflict: a state nothing can enter is unreachable. Resolved by separating two senses of "reachable". **All five states are reachable by `#hash` and every one is exitable**, so 1.4 holds and no dead state hides in the type. What Phase 1 withholds is the wiring **from the bench**: a Phase 2 hotspot does not navigate, and a Phase 2 state renders the "coming soon" plaque rather than a content view. That is 1.7 as written, not a workaround. Phase membership is encoded once, in `OBJECT_PHASE` in `benchMachine.ts`, so promoting an object in Phase 2 is a one-line change rather than a hunt through scene files.
+
+### 2026-09-03: Render constraints and the partial audit
+
+- **D15. The render is governed, not assumed.** `DESIGN.md` Sections 1 through 9 govern the interface and silently assumed the imagery underneath it. That assumption does not survive contact with the material: the framed still is not a picture, it is the backdrop a translucent console has to stay legible against, and Section 2.5 forbids every CSS remedy for a bad backdrop. New `DESIGN.md` **Section 10** now carries the luminance law (a hard floor of 203 under a console, 215 to 245 target), the quiet-zone rule, the light and glow constraints, and the sRGB export requirement. Derived from the committed token values rather than estimated. Blocking, enforced by brand-designer.
+- **D16. Three render rulings, arbitrated.** scene-artist and brand-designer disagreed while specifying the Spline work. Resolved in brand-designer's favour, who holds blocking authority on the palette law: **bloom off** (it produces exactly the coloured halo Section 1 prohibits), **no mint anywhere in the render** (putting the accent in the scenery retires its meaning as "interactive", which Section 2.3 forbids), and **broad object surfaces peak at 235** (the hover glow is a CSS state, so a near-white object leaves it no headroom and the hotspot feels dead).
+- **D17. The audit gap is narrowed, not closed.** `tools/audit.mjs` automates every check that can be made statically and is now a mandatory gate. The composite check cannot be static, because `backdrop-filter` has no static equivalent and no render exists yet, so it stays a documented manual step in `tools/composite-audit.js`. Section 3 says so explicitly rather than claiming a closed gap, per Invariant 1.9.
 
 ### Open questions (settle by looking, not by planning)
 

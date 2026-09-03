@@ -27,6 +27,8 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
+| Render constraints (`DESIGN.md` Section 10) | **Implemented** (documented, blocking) |
+| Automated design audit (`tools/audit.mjs`) | **Implemented** (static half); composite check still **Planned** |
 
 ---
 
@@ -59,6 +61,7 @@ A pristine, near-monochrome lab bench in cool blues and sterile whites, objects 
 npm install
 npm run dev         # local dev server
 npm run typecheck   # the real gate
+npm run audit       # design-system gate: contrast floors, high-key law, tokens-only
 npm run build       # production build (runs typecheck first)
 npm run preview     # serve the production build
 ```
@@ -88,6 +91,14 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03
+
+- **`DESIGN.md` gained Section 10, render constraints.** Sections 1 to 9 govern the interface and silently assumed the imagery underneath it, which does not survive contact with the material: the framed still is not a picture, it is the backdrop a translucent console must stay legible against, and Section 2.5 forbids every CSS remedy for a bad one. Section 10 carries the luminance law (hard floor 203 under a console, 215 to 245 target), the quiet-zone rule, the light and glow constraints, and the sRGB export requirement, all derived from the committed token values rather than estimated. Recorded as D15.
+- **Three render rulings arbitrated** between scene-artist and brand-designer, resolved in favour of the blocking authority on palette: bloom off, no mint anywhere in the render, and broad object surfaces peaking at 235 so the CSS hover glow has headroom. Recorded as D16.
+- **Added `tools/audit.mjs`, run as `npm run audit`.** It enforces the token contrast floors against every ground, the high-key law, the tokens-only rule in components, the fixed stylesheet load order, and structural drift against the Section 2 tree. Verified as a real gate the same way typecheck was: lightening `--ink-1` to a plausible-looking grey and darkening a ground both produce failures and a non-zero exit, and restoring returns it to green.
+- **The `CLAUDE.md` Section 3 KNOWN GAP is narrowed, not closed, and says so.** The composite check cannot be static: text sits on a translucent console over a *blurred* still, `backdrop-filter` has no static equivalent, and no render exists yet. That half lives in `tools/composite-audit.js`, pasted into the dev console by hand, and is written to report the **worst** pixel under each text element rather than the mean, because the mean is what lets a bad render pass. A manual browser check remains mandatory for any change to `tokens.css` or a console surface.
+- Published the Spline production walkthrough (scene setup, lighting rig, camera framing for the fake zoom, export settings, placeholder prompts, and the reject list) as a shareable page for the owner. The filename contract is settled: `bench-master.png`, `microscope-framed.png`, plus three Phase 2 names.
 
 ### 2026-08-31 (Stage C)
 
