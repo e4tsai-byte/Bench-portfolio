@@ -10,9 +10,9 @@ Agents are defined in `.claude/agents/`. The invariants they enforce live in `CL
 
 | Agent | Owns | Called when |
 |---|---|---|
-| **scene-artist** | The Spline scene, the baked stills, camera framings, and the 3D look in `DESIGN.md` Section 1 | Producing or reframing a render, judging whether a still matches the master, choosing export settings |
+| **scene-artist** | The 3D scene, the models, camera framings, lighting, and the 3D look in `DESIGN.md` Sections 1 and 10 | Producing or reframing a model or a camera state, judging whether the scene reads on-brand, choosing export settings |
 | **frontend-engineer** | `components/`, `scenes/`, `state/`, `App.tsx`, `main.tsx`, `index.html`, the placeholder-swap discipline | Building or refactoring UI, the state machine, hotspots, a typecheck failure |
-| **motion-engineer** | GSAP timelines, the crossfade-plus-scale transition, Draggable/scrub interactions, easing and durations | Any transition, the focus-knob, the calendar scrub, a move that feels wrong |
+| **motion-engineer** | GSAP timelines, the camera transitions in `three/CameraRig.tsx`, Draggable/scrub interactions, easing and durations | Any transition, the focus-knob, the calendar scrub, a move that feels wrong |
 | **brand-designer** | `styles/`, the tokens, `DESIGN.md`, the high-key law: blocking on palette | Tokens, visual treatment, visual drift, any surface that risks going dark |
 | **ux-designer** | Information architecture, the navigation model, onboarding, what appears in a focused state | Designing a view, deciding what shows mid-zoom, the escape-hatch behavior |
 | **content-steward** | `content/*.ts`, the accuracy of every research, publication, patent, timeline, and project claim: blocking on claim accuracy | Adding or editing portfolio content, any user-visible factual claim |
@@ -107,4 +107,4 @@ Blocking authority belongs to brand-designer (the palette law), content-steward 
 
 ## What this roster is currently pointed at
 
-Phase 1, the vertical slice: the full bench render (placeholder first), the microscope wired end to end (viewfinder mask, specimen cards from `research.ts`, static HUD crosshairs), the other three objects glowing with "coming soon" plaques, and the whole thing deployed live on Vercel. Every agent's Phase 1 job is scoped to that slice. The Spline scene is the one net-new asset on the critical path (scene-artist), and the placeholder contract is what keeps everyone else unblocked while it is produced.
+Phase 1, the vertical slice: the full bench scene (placeholder primitives first), the microscope wired end to end (viewfinder mask, specimen cards from `research.ts`, static HUD crosshairs), the other three objects present with "coming soon" plaques, and the whole thing deployed live on Vercel. Every agent's Phase 1 job is scoped to that slice. **Amended by D20:** the net-new asset on the critical path is now the owner's `.glb` models rather than a Spline still-baking pass, and the placeholder contract (primitive geometry at the final transform, Invariant 1.3) is what keeps everyone else unblocked while they are produced.

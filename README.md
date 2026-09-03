@@ -84,7 +84,7 @@ npm run preview     # serve the production build
 Stated here rather than buried.
 
 1. **Greenfield.** As of 2026-08-31 the code does not exist yet; only the spec and docs do. The status table above is the source of truth.
-2. **The Spline scene is net-new work** and the one asset on the critical path. Until it exists, the build runs on labeled placeholder images, and any placeholder in production is marked Placeholder above.
+2. **The 3D models are net-new work** and the one asset on the critical path (amended by D20; this was a Spline still-baking pass). Until they exist, the build runs on placeholder primitive geometry at the final transforms, and any placeholder in production is marked Placeholder above.
 3. **Phase 1 wires only the microscope.** The other three objects are intentionally inert (glow plus a "coming soon" plaque) until Phase 2.
 4. **Desktop-only for now.** Mobile is a planned reduction, not a Phase 1 deliverable.
 5. **Some decisions can only be settled by looking** (does the fake zoom convince, is the focus-knob worth building). Those are tracked as open questions in `CLAUDE.md` Section 7 and are deliberately not pre-decided.
@@ -94,6 +94,15 @@ Stated here rather than buried.
 ## Build log
 
 Newest first. Add a dated entry at the end of every phase or meaningful change, and update the status table above to match. This is the "live" part of the README.
+
+### 2026-09-03 (D20 follow-up: finish the doc sweep)
+
+- **Swept every governing doc for text D20 left false.** The headline sections were rewritten when the switch landed, but the trees, the agent roster, the component descriptions, and the acceptance criteria still described a pre-baked project. `PRODUCT.md`, `CLAUDE.md`, `DESIGN.md`, `AGENTS.md`, and this file are now consistent with the code.
+- **Corrected a wrong number inside a binding decision.** D20's reasoning cited "roughly 180kb gzipped" for three.js plus React Three Fiber as a point in the switch's favour. The measured cost is 323.65kB gzipped, up from 61kB, so about 263kB added. The build log had the correction but the decision record did not, which meant the contract was justifying a decision with a figure that was never true. D20 now states the measured number and says plainly that the bundle argument was at best neutral.
+- Retired `components/Transition.tsx` from both trees. It was never built, and the crossfade it described is now a camera move in `three/CameraRig.tsx`. D13's pointer to it, for where the GSAP ease strings live, is corrected to the same place.
+- Reframed open question 1. It is no longer "does the 2D fake convince" but "is the live camera move good enough to keep, or should stills be captured from this scene and fed to the retained fallback". It is now answerable by looking, which it was not before.
+- `PRODUCT.md` Section 14 kept as the original plan of record with each item marked done, superseded, or outstanding, rather than rewritten to look as if it had always said the right thing.
+- Marked `PRODUCT.md`'s header status honestly (it still claimed "Greenfield, empty repo") and noted that where it and `CLAUDE.md` disagree, the decision record wins.
 
 ### 2026-09-03 (D20: the bench becomes one real-time scene)
 

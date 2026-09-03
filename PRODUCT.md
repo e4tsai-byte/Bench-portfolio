@@ -2,7 +2,7 @@
 
 **Repo:** github.com/e4tsai-byte/Bench-portfolio
 **Owner:** Ethan Tsai
-**Status:** Greenfield (empty repo). This document is the build brief. An implementing agent (Claude Code) should treat it as the source of truth and start with Phase 1.
+**Status:** Phase 1 in progress. Toolchain, token layer, navigation state machine, real-time bench scene, and all content files are built; the microscope console, hover glow, onboarding hint, the owner's models, and deployment remain. This document is the build brief, but where it and `CLAUDE.md` disagree, `CLAUDE.md` Section 7 (the decision record) is authoritative, because several parts of this file have been superseded in place. See `README.md` for live status.
 **Style note for all generated prose in this project (READMEs, copy, comments): no em-dashes. Use commas, colons, or parentheses.**
 
 ---
@@ -23,7 +23,7 @@ This is a **personal playground built to the owner's taste**, not a lead-convers
 - Ship something live and complete-looking fast, then extend.
 
 **Non-goals (explicit)**
-- NOT real-time photorealistic 3D. The word "photorealistic" from the original idea doc (`IDEA.md`) is retired. Target is pre-baked stylized 3D imagery.
+- NOT photorealistic. The word "photorealistic" from the original idea doc (`IDEA.md`) is retired and stays retired. Since D20 the bench *is* real-time 3D, but the target is a stylized, high-key, matte look, which is deliberately the cheapest thing to render well in real time.
 - NOT mobile-first. Phase 1 is desktop only (see Section 11).
 - NOT a CMS-backed or server-rendered app. It is a static single-page build.
 - NOT dark mode. See the palette law below.
@@ -83,7 +83,6 @@ Bench-portfolio/
       Hotspot.tsx                (interactive region over the bench still)
       BackToBench.tsx            (persistent escape control)
       OnboardingHint.tsx         (one-time, localStorage-gated)
-      Transition.tsx             (GSAP crossfade + scale wrapper)
       ViewfinderMask.tsx         (circular lens mask)
       SpecimenCard.tsx           (floating glass research card)
       HudCrosshairs.tsx          (static flavor overlay)
@@ -93,9 +92,13 @@ Bench-portfolio/
       patents.ts                 (notebook data)
       timeline.ts                (calendar data)
       aiProjects.ts              (computer data)
+    three/
+      BenchScene.tsx             (the R3F scene: lights, objects, materials)
+      CameraRig.tsx              (camera state per bench state, GSAP moves)
+      palette.ts                 (token bridge: tokens.css into the scene)
     assets/
-      renders/                   (final Spline exports)
-      placeholders/              (AI-generated stand-ins, same filenames)
+      models/                    (export-ready .glb only; filenames are the 1.3 contract)
+      renders/                   (baked stills, only if the 1.2 fallback is taken)
     styles/
       tokens.css                 (palette, spacing, type scale)
   public/
@@ -202,9 +205,9 @@ Phase 1 research content includes the PDAC/Schwann-cell whole-organ 3D histology
 ## 11. Phasing and acceptance criteria
 
 **Phase 1: the vertical slice (build first, ship live)**
-- Full bench master still (or placeholder) renders as the landing scene.
-- Four hotspots overlaid on the four objects. All four glow on hover.
-- Microscope hotspot triggers the crossfade-plus-scale transition into the microscope console.
+- Full bench scene (models, or placeholder primitives) renders as the landing scene.
+- All four objects are hoverable and glow on hover.
+- Selecting the microscope triggers the camera move into the microscope console.
 - Microscope console (high-key, luminous white): circular **viewfinder lens mask**, **floating specimen cards** for the research items, **static HUD crosshairs** in the corners.
 - The other three objects glow on hover and show a small **"coming soon" plaque**; they are not yet wired to a view.
 - Persistent "Back to Bench" control. One-time onboarding hint. `#microscope` deep link works.
@@ -239,11 +242,13 @@ These cannot be answered by planning; they need a running build to react to. Do 
 
 ## 14. First actions for the implementing agent
 
-1. Scaffold React + Vite + TypeScript in the repo. Add GSAP (with Draggable, InertiaPlugin).
-2. Create `styles/tokens.css` encoding the high-key palette, and wire a global reset.
-3. Generate labeled placeholder images (master bench + microscope framed still) with the final filenames.
-4. Build the bench state machine, hotspots, hover-glow, persistent Back-to-Bench, and the one-time onboarding hint.
-5. Build the GSAP crossfade-plus-scale transition and the microscope console (viewfinder mask, specimen cards from `research.ts`, static HUD crosshairs).
-6. Populate `research.ts` with the owner's research content (PDAC/Schwann-cell abstract plus other items).
-7. Deploy to Vercel and return the live URL.
-8. Leave the other three objects as glow + "coming soon" plaques for Phase 2.
+Kept as the original plan of record. Items 1, 2, 4, and 6 are **done**; 3 and 5 were **superseded by D20**; 7 and 8 remain.
+
+1. ~~Scaffold React + Vite + TypeScript. Add GSAP (with Draggable, InertiaPlugin).~~ Done, Stage A.
+2. ~~Create `styles/tokens.css` and wire a global reset.~~ Done, Stage B.
+3. ~~Generate labeled placeholder images with the final filenames.~~ **Superseded by D20:** placeholders are primitive geometry in code at the final transforms, and the owner delivers `.glb` models rather than stills.
+4. ~~Build the bench state machine, persistent Back-to-Bench, and the deep links.~~ Done, Stage C. The one-time onboarding hint is still outstanding.
+5. ~~Build the GSAP crossfade-plus-scale transition.~~ **Superseded by D20:** the transition is a real camera move in `three/CameraRig.tsx`. The microscope console (viewfinder mask, specimen cards, HUD crosshairs) is still outstanding.
+6. ~~Populate `research.ts`.~~ Done, with the real abstract.
+7. Deploy to Vercel and return the live URL. **Outstanding.**
+8. Leave the other three objects inert with "coming soon" plaques for Phase 2. Holding.

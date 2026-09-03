@@ -95,7 +95,6 @@ Bench-portfolio/
       Hotspot.tsx
       BackToBench.tsx
       OnboardingHint.tsx
-      Transition.tsx             GSAP crossfade + scale
       ViewfinderMask.tsx
       SpecimenCard.tsx
       HudCrosshairs.tsx
@@ -195,7 +194,7 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 - **D10. Type.** The two font tokens are committed as **system stacks**, with the mono ordered to prefer instrument-grade faces already installed (`SF Mono`, `Cascadia Mono`) before falling back. No network request, no layout shift, which serves the "keep the bundle light" constraint in `PRODUCT.md` Section 6. Deliberately reversible: swapping in a webfont is a one-line change to one token. A seven-step type scale on a roughly 1.25 ratio, plus line-heights, weights, and tracking, is recorded in `DESIGN.md` Section 2.6.
 - **D11. Spacing.** A 4px base grid, eight steps, recorded in the new `DESIGN.md` Section 2.8. Chosen so the existing 8/18/24/32 radius tiers land cleanly against padding.
 - **D12. Materials.** `--frost-edge` becomes two strokes (bright inset rim plus a cool outer hairline derived from `--ink-3`, so the edge cannot drift off-palette), and the shadows that Section 2.4 prose already promised now exist as three tokens derived from `--ink-0` at low alpha. Never pure black: black shadows on a cool near-white ground read muddy and warm the palette, which Section 2.1 prohibits.
-- **D13. Motion, and one documented exception to Invariant 1.6.** GSAP ease names such as `power3.out` are strings, not valid CSS, so they cannot live in `tokens.css`. Durations stay in `tokens.css`; the ease strings live as one exported constant in `Transition.tsx` until a second consumer exists (both are Phase 2), at which point they earn a dedicated motion module. CSS easing tokens mirroring the GSAP curves were added so a CSS hover and a GSAP timeline ease identically.
+- **D13. Motion, and one documented exception to Invariant 1.6.** GSAP ease names such as `power3.out` are strings, not valid CSS, so they cannot live in `tokens.css`. Durations stay in `tokens.css`; the ease strings live as one exported constant, which since D20 is `EASE` in `three/CameraRig.tsx` rather than the never-built `Transition.tsx`, until a second consumer exists (both are Phase 2), at which point they earn a dedicated motion module. CSS easing tokens mirroring the GSAP curves were added so a CSS hover and a GSAP timeline ease identically.
 
 **Styling approach.** Plain global CSS with the three declared stylesheets, not CSS Modules, resolving the conflict between `PRODUCT.md` Section 6 ("CSS Modules or a lightweight styling approach") and this file's Section 2, whose fixed load order is described as load-bearing. Section 2 wins because it is the binding declarative tree.
 
@@ -220,7 +219,7 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 
 - **D20. Real-time 3D, with baking kept as a fallback.** Overturns the pre-baked-stills form of Invariant 1.2 and supersedes the asset half of D2, D5, and D6. The owner is authoring, editing, and iterating the 3D files themselves, and that is what decided it: on the baked path every model tweak costs two re-exports, an overlay registration check, a contrast re-verification, and two multi-megabyte binaries committed to a public repo. That loop is unaffordable while the look is still being found, and it was certain to be still being found, since the scene has never been built. On the real-time path a model revision costs a file drop and a refresh.
 
-  Three further reasons, in descending weight. The entire fake-zoom apparatus (identical camera positions, FOV-only changes, overlay registration, a hand-computed scale factor and transform origin) existed solely to make a 2D crossfade resemble a camera move, and it disappears. One scene and one lighting rig make master-to-object consistency structural rather than something verified per export. And the bundle intuition was backwards: three.js plus React Three Fiber is roughly 180kb gzipped, while two 3200x1800 PNGs are plausibly 2 to 5MB each.
+  Three further reasons, in descending weight. The entire fake-zoom apparatus (identical camera positions, FOV-only changes, overlay registration, a hand-computed scale factor and transform origin) existed solely to make a 2D crossfade resemble a camera move, and it disappears. One scene and one lighting rig make master-to-object consistency structural rather than something verified per export. On bundle size the argument was weaker than it was made to sound at the time, and the correction belongs here rather than only in the build log: the figure quoted while deciding was "roughly 180kb gzipped", and the measured cost is **323.65kB gzipped total, up from 61kB, so about 263kB added**. Two 3200x1800 PNGs are still plausibly larger, but this was presented as a point in favour and it is at best neutral. Code-splitting the canvas is an open follow-up.
 
   **What did not change.** D2's retirement of photorealism stands: the look is stylised, high-key, matte, which is deliberately the easiest case to render well in real time. The baked path is retained as a documented fallback rather than deleted, because Open question 1 is exactly the kind of thing that must be settled by looking, and this way a bad answer costs a still capture instead of a rebuild.
 
@@ -232,7 +231,7 @@ Writing `tokens.css` exposed that `DESIGN.md` could not fully specify it. Invari
 
 ### Open questions (settle by looking, not by planning)
 
-1. Whether the crossfade-plus-scale zoom feels convincing, or the hero microscope move needs a pre-rendered clip (D6).
+1. Whether the real camera move feels convincing. Reframed by D20: this is no longer "does the 2D fake convince" but "is the live move good enough to keep, or should stills be captured from this scene and fed to the retained 2D fallback". Answerable by looking, which is now possible.
 2. Whether the draggable focus-knob is worth building, or plain scroll is enough.
 3. Which research metrics, if any, deserve the animated metric bars in the microscope.
 
