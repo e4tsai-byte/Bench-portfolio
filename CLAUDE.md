@@ -49,7 +49,7 @@ Enforcer: brand-designer. Every color, radius, spacing, duration, and type value
 
 Enforcer: product-strategist. Phase 1 wires only the microscope. The other three objects glow on hover and show a "coming soon" plaque; they are not wired to a view until their phase. Building Phase 2 objects before Phase 1 is shipped and live is a violation, because the feel questions Phase 1 answers (does the fake zoom convince, does the viewfinder work) must be settled by looking before the pattern is replicated.
 
-**Amended 2026-09-04 (D28), by owner override, with the invariant knowingly unsatisfied.** The NOTEBOOK arrival transition (the opening flip) is built and its hotspot navigates, while Phase 1 was **not** shipped and live: hover-glow, the onboarding hint, and the Vercel deploy were all outstanding. product-strategist ruled this a violation and was overridden in chat. The scope is narrow and the rest of this invariant still binds: **CALENDAR and COMPUTER remain Phase 2, unwired and inert**, and the notebook has an arrival but still **no content view** - `#notebook` renders the coming-soon plaque, not a publications console. See D28.
+**Amended 2026-09-04 (D28), by owner override, with the invariant knowingly unsatisfied.** The NOTEBOOK arrival transition (the opening flip) is built and its hotspot navigates, while Phase 1 was **not** shipped and live: hover-glow, the onboarding hint, and the Vercel deploy were all outstanding. product-strategist ruled this a violation and was overridden in chat. The scope is narrow and the rest of this invariant still binds: **CALENDAR and COMPUTER remain Phase 2, unwired and inert.** The notebook's content view followed the same day under D29. See D28 and D29.
 
 ### 1.8 Motion respects the user
 
@@ -321,12 +321,26 @@ The lesson for whoever debugs a similar "works on click, fails on load" split in
 
   **Exact scope, and the rest of 1.7 still binds.**
   - Built: the NOTEBOOK arrival timeline (the three-hinge opening flip), a re-derived NOTEBOOK camera state, and `NOTEBOOK` promoted in `OBJECT_PHASE` so its hotspot navigates. Promotion is not incidental: a flip that can only be reached by hash is a flip nobody can look at, because every hash and first-paint path lands already-open by design (see below), so without promotion the override would buy nothing.
-  - **Not built:** the Notebook content view. There is no publications/patents console; `#notebook` still renders the coming-soon plaque. The notebook has an arrival, not a destination.
+  - **Not built in D28, and built the same day in D29:** the Notebook content view. **This bullet also contained an error worth preserving rather than quietly deleting:** it claimed `#notebook` renders the coming-soon plaque. It did not. Promoting NOTEBOOK moved it into `App.tsx`'s `isWiredThisPhase` branch, which rendered a bare `state / notebook` placeholder - no plaque at all. Verified in the DOM. An outward claim that was never true is exactly the Invariant 1.9 defect this record exists to prevent, and it survived being written into CLAUDE.md, README.md, PRODUCT.md and a commit message before anyone looked.
   - **Unchanged:** CALENDAR and COMPUTER remain Phase 2, inert, with non-navigating hotspots.
 
 - **Two live defects surfaced while planning this, both pre-existing and neither caused by the flip.** Recording them because they were found by specialist review rather than by the code failing, and would otherwise look like regressions introduced here.
   - **`CAMERA_STATES.NOTEBOOK` aimed at air.** Its target was `[-2.0, 0.35, 0.35]` while the notebook normalises to 0.076 units tall, so the aim point sat 0.274 units above the book's top face. Confirmed by looking: `#notebook` framed mostly empty worktop. This is D24's bug class again, a target carried over from primitive-era assumptions, and it was wrong before this work started.
   - **The open spread would have opened straight through the laptop.** The hinges mirror about model x -1.085, so at scale 0.4343 the spread reaches 1.365 world units left of the notebook's transform: x -3.365, against `computer.glb` spanning -3.603 to -2.497. **0.868 units of intersection**, derived twice independently. Fixed by rotating the notebook 180 degrees in `OBJECT_FACING` so the book opens toward +x into clear space, which costs a scene constant rather than a re-export, since the hinge pivots are baked into the `.glb`.
+
+### 2026-09-04: D29, the notebook's content view
+
+- **D29. The Notebook console is built: publications on the left leaf, patents on the right.** This continues D28's override of Invariant 1.7 rather than opening a new question - D28 scoped itself to the arrival and explicitly excluded the content view, so building it extends that scope and is recorded here rather than folded silently into D28. Phase 1 remains not shipped and live; hover-glow, the onboarding hint, and the deploy are still outstanding, and the owner chose to leave them so.
+
+- **Layout deviates from `PRODUCT.md` Section 11, deliberately.** That section specifies "table of contents left / document viewer right". With one publication and three patents an index is a thin use of a whole page and adds a selection state the content does not need. The spread already has two pages, so each collection takes one. `PRODUCT.md` is updated to say so rather than left contradicting the build.
+
+- **The content is DOM, never drawn into the page texture, and never projected onto the 3D surface.** DESIGN.md 10.6 permits generated surface markings only while nothing meaningful exists solely in the render, because canvas text is invisible to assistive technology - and a patent number is precisely the meaningful case. Projection onto the page would separately reimport the registration and per-frame matrix apparatus D20 deleted. The panels are placed once in viewport units over a camera state that does not move, which is static composition, not registration.
+
+- **An empty patent number renders as "no number issued", never as an empty string.** `patents.ts` deliberately leaves the U.S. provisional's number blank because the source gives none, and Invariant 1.5 makes that a blocking accuracy question rather than a formatting one.
+
+- **A false claim from D28 is corrected here, not deleted.** D28 stated that `#notebook` renders the coming-soon plaque. It never did: promotion had already moved it to the `isWiredThisPhase` branch, which rendered a bare `state / notebook` placeholder. The error propagated into `README.md`, `PRODUCT.md` and a commit message before being caught by looking at the DOM. Recording it is the point - Invariant 1.9's failure mode is precisely a plausible outward claim that nobody checked.
+
+- **Measured:** `tools/composite-audit.js` in the NOTEBOOK state with an entry expanded returns **PASS, 18 elements, 0 failures**, which DESIGN.md 10.7 makes mandatory for this camera state. Escape collapses an entry without exiting (D23), and Back-to-Bench is present in every frame.
 
 ### Open questions (settle by looking, not by planning)
 

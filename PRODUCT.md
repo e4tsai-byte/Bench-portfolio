@@ -211,7 +211,7 @@ Phase 1 research content includes the PDAC/Schwann-cell whole-organ 3D histology
 - All four objects are hoverable and glow on hover.
 - Selecting the microscope triggers the camera move into the microscope console.
 - Microscope console (high-key, luminous white): circular **viewfinder lens mask**, **floating specimen cards** for the research items, **static HUD crosshairs** in the corners.
-- The calendar and computer glow on hover and show a small **"coming soon" plaque**; they are not wired to a view. The **notebook is a partial exception since D28**: its hotspot navigates and it plays an opening flip on arrival, but it still has no content view and lands on the same plaque.
+- The calendar and computer glow on hover and show a small **"coming soon" plaque**; they are not wired to a view. The **notebook is an exception since D28/D29**: its hotspot navigates, it plays an opening flip on arrival, and it has a real content view.
 - Persistent "Back to Bench" control. One-time onboarding hint. `#microscope` deep link works.
 - Deployed to Vercel and reachable at a live URL.
 - Acceptance: from the live URL, a user can land on the bench, hover to see all four objects glow, click the microscope, read the research cards inside the viewfinder, and return to the bench, on desktop, with the high-key palette throughout and no dark surfaces.
@@ -253,4 +253,4 @@ Kept as the original plan of record. Items 1, 2, 4, and 6 are **done**; 3 and 5 
 5. ~~Build the GSAP crossfade-plus-scale transition.~~ **Superseded by D20:** the transition is a real camera move in `three/CameraRig.tsx`. The microscope console (viewfinder mask, specimen cards, HUD crosshairs) is still outstanding.
 6. ~~Populate `research.ts`.~~ Done, with the real abstract.
 7. Deploy to Vercel and return the live URL. **Outstanding.**
-8. Leave the other three objects inert with "coming soon" plaques for Phase 2. **Partly superseded (D28):** the notebook now has a navigating hotspot and an opening-flip arrival, though still no content view. Calendar and computer: Holding.
+8. Leave the other three objects inert with "coming soon" plaques for Phase 2. **Partly superseded (D28/D29):** the notebook now has a navigating hotspot, an opening-flip arrival, and a content view. Calendar and computer: Holding.

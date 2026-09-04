@@ -27,7 +27,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
 | Owner's 3D models (`assets/models/*.glb`) | **Placeholder** (all four - `microscope`, `computer`, `notebook`, `calendar` - are exploratory low-poly drafts, wired and rendering) |
-| Notebook object | **In progress** (opening flip + camera arrival built by override, D28; no content view - `#notebook` still shows the coming-soon plaque) |
+| Notebook object | **Implemented** (opening flip, camera arrival, and a two-leaf console: publications left, patents right — built by override, D28/D29) |
 | Calendar / Computer objects | **Planned** (Phase 2, inert, hotspots do not navigate) |
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
@@ -87,7 +87,7 @@ Stated here rather than buried.
 
 1. **Greenfield.** As of 2026-08-31 the code does not exist yet; only the spec and docs do. The status table above is the source of truth.
 2. **The 3D models are net-new work** and the one asset on the critical path (amended by D20; this was a Spline still-baking pass). Until they exist, the build runs on placeholder primitive geometry at the final transforms, and any placeholder in production is marked Placeholder above.
-3. **Phase 1 wires the microscope, and now the notebook's arrival only.** The notebook opens when entered and its hotspot navigates (D28, an owner override of Invariant 1.7 taken before Phase 1 was live), but it has no content view: `#notebook` still shows a "coming soon" plaque. The calendar and computer remain intentionally inert until Phase 2.
+3. **Phase 1 wires the microscope, and now the notebook.** The notebook opens when entered, its hotspot navigates, and it has a real content view (D28/D29, an owner override of Invariant 1.7 taken before Phase 1 was live). The calendar and computer remain intentionally inert until Phase 2, with non-navigating hotspots and "coming soon" plaques.
 4. **Desktop-only for now.** Mobile is a planned reduction, not a Phase 1 deliverable.
 5. **Some decisions can only be settled by looking** (does the fake zoom convince, is the focus-knob worth building). Those are tracked as open questions in `CLAUDE.md` Section 7 and are deliberately not pre-decided.
 
@@ -115,6 +115,16 @@ Newest first. Add a dated entry at the end of every phase or meaningful change, 
 - **Verified in-browser, not asserted:** disclosure toggling (via direct DOM interaction, since synchronous reads after a native `.click()` predate React's batched re-render and produce false negatives, a real gotcha worth recording), the DOI link resolves to the Crossref-verified URL and opens in a new tab, `Escape` collapses without changing state or hash, and Tab order is BackToBench then the three cards in array order with no trap.
 - **Two items deliberately deferred, flagged rather than silently skipped:** `frameloop="demand"` (R3F runs a continuous render loop even with the camera at rest; a real but separate performance question) and a Safari-specific check of `backdrop-filter` over a `<canvas>`, which has a known history of being less reliable there than over Chromium.
 
+### 2026-09-04 (D29: the notebook's content view)
+
+- **The notebook has a real view.** Publications on the left leaf, patents on the right - two panels sized and placed over the open spread so the gutter, the fore-edges and the D26 quadrille still show around them. Titles are disclosure controls; expanding one reveals authors, contribution, tags and the DOI link.
+- **Deviates from `PRODUCT.md` Section 11 on purpose.** That spec asks for "table of contents left / document viewer right". With one publication and three patents, an index is a thin use of a whole page and adds a selection state the content does not need. The spread already has two pages, so each collection takes one. `PRODUCT.md` is updated rather than left contradicting the build.
+- **DOM, not texture, and not projected onto the page.** DESIGN.md 10.6 allows generated surface markings only while nothing meaningful exists solely in the render - canvas text is invisible to assistive technology, and a patent number is exactly the meaningful case. The panels are placed once in viewport units against a camera state that does not move: static composition, not the per-frame registration D20 deleted.
+- **An empty patent number renders as "no number issued".** `patents.ts` leaves the U.S. provisional blank because the source gives none, and Invariant 1.5 makes that an accuracy question, not a formatting one.
+- **I had to correct a claim I made yesterday in three files.** D28, this README and `PRODUCT.md` all said `#notebook` renders the coming-soon plaque. It never did - promoting NOTEBOOK moved it to the `isWiredThisPhase` branch, which rendered a bare `state / notebook` placeholder. Caught by reading the DOM, not by reasoning. The correction is recorded in D29 rather than quietly edited away, because a plausible outward claim nobody checked is the exact Invariant 1.9 failure mode.
+- **Measured, not asserted:** composite audit in the NOTEBOOK state with an entry expanded returns **PASS, 18 elements, 0 failures** (mandatory under 10.7); Escape collapses an entry without exiting (D23); Back-to-Bench present in every frame; typecheck and audit clean with no new warnings.
+- **Unchanged:** calendar and computer remain Phase 2 and inert. Hover-glow, the onboarding hint and the Vercel deploy are still outstanding, so Phase 1 is still not shipped and live and D28's recorded risk stands.
+
 ### 2026-09-04 (D28: the notebook's opening flip)
 
 - **The notebook opens when you enter it.** Clicking it flies the camera in, holds, and the three-hinge rig unfolds the book to a flat spread while the camera watches from outside. Built at the owner's explicit direction over a phase-discipline objection, recorded as **D28**; Invariant 1.7's own text is amended in place rather than left contradicting the repo.
@@ -124,7 +134,7 @@ Newest first. Add a dated entry at the end of every phase or meaningful change, 
 - **Timing is entirely token-derived.** Covers and spine ride `--dur-move`, pages ride the longer `--dur-settle`, all starting together, so the pages trail *by construction* rather than by a hand-tuned offset. An earlier draft used magic fractions (`move * 0.9`, a 0.08/0.14 stagger); those were Invariant 1.6 / D13 defects and are gone.
 - **Verified, not asserted:** the flip on click; the flat spread with the grid visible; **composite audit PASS with 0 failures in the new NOTEBOOK camera state**, which DESIGN.md 10.7 makes mandatory; a direct `#notebook` link landing already-open with no flip; `prefers-reduced-motion` cutting straight to the open book; and Back-to-Bench closing it so the bench is never left with an open book.
 - **A specialist correction that turned out to be wrong, checked rather than trusted.** Review claimed `computer.glb` measures 0.680 wide (making the collision smaller) and that the laptop floats 0.2875 units above the worktop. Recomputed with node rotations applied: W 3.142, H 2.217, scale 0.3519, world width **1.106**, spanning -3.603 to -2.497, lowest point `Foot_LB` at -0.014. The original figures stand and the laptop does not float; the correction came from a bounding box computed without rotations.
-- **Still not built:** the Notebook content view. The notebook has an arrival, not a destination - `#notebook` lands on the coming-soon plaque. Calendar and computer remain Phase 2 and inert.
+- **Still not built at the time of that commit:** the Notebook content view. **Built the same day (D29).** The claim in this entry that `#notebook` lands on the coming-soon plaque was also wrong when written - promotion had already moved it to the `isWiredThisPhase` branch, which rendered a bare `state / notebook` placeholder. Corrected rather than left standing.
 
 ### 2026-09-04 (D27: the bench becomes a real lab bench)
 

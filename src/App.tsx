@@ -10,6 +10,7 @@ import { Canvas } from '@react-three/fiber'
 import BackToBench from './components/BackToBench'
 import BenchScene from './three/BenchScene'
 import Microscope from './scenes/Microscope'
+import Notebook from './scenes/Notebook'
 import { CAMERA_STATES } from './three/CameraRig'
 import {
   OBJECT_LABEL,
@@ -192,6 +193,8 @@ export default function App() {
           >
             <Microscope />
           </div>
+        ) : state === 'NOTEBOOK' ? (
+          <Notebook />
         ) : isWiredThisPhase(state) ? (
           <p className="hud-label">{`state / ${state.toLowerCase()}`}</p>
         ) : (

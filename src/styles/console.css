@@ -516,3 +516,136 @@ button.card {
 .console-arrival--diving {
   opacity: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   The notebook spread (D28). Two panels, one per leaf of the open book.
+
+   Sized and inset so the gutter, the fore-edges, and the D26 quadrille stay
+   visible around them rather than being covered: DESIGN.md 10.2 wants a
+   blur-radius of margin kept inside the leaves, and the grid only just became
+   visible in the app at all.
+
+   `.panel` (not `.console`) because Section 2.5 forbids frost on frost and
+   these carry body text over a busy render; the opaque ground is what makes
+   them legal there.
+--------------------------------------------------------------------------- */
+.spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-7);
+  /* Sized and dropped to sit OVER the two leaves at the NOTEBOOK camera's
+     resting framing, a little narrower than the pages so the fore-edges and
+     the D26 quadrille still show around them (DESIGN.md 10.2).
+
+     This is static composition, not projection: the camera state for NOTEBOOK
+     is fixed, so the panels can be placed once in viewport units. Nothing here
+     reads the 3D transform per frame - that registration apparatus is exactly
+     what D20 deleted and what 10.6 keeps out of the DOM. */
+  width: min(64vw, 50rem);
+  margin: 26vh auto 0;
+  align-items: start;
+}
+
+.spread__leaf {
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.spread__empty {
+  display: block;
+  text-align: center;
+  margin-top: var(--sp-5);
+}
+
+.spread__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+/* Separated by rhythm rather than a rule: a 1px hairline would be a raw px in
+   a stylesheet (Invariant 1.6), and with this few entries the gap does the
+   work on its own. */
+.spread__entry + .spread__entry {
+  padding-top: var(--sp-2);
+}
+
+.spread__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+}
+
+/* The whole title is the control: a separate affordance would make the target
+   smaller than the thing it opens, and Section 3 item 4 wants generous hits. */
+.spread__disclosure {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--ink-0);
+  text-align: left;
+  cursor: pointer;
+}
+
+.spread__disclosure:hover {
+  color: var(--accent-deep);
+}
+
+.spread__meta {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+
+.spread__body {
+  margin-top: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.spread__authors {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-1);
+}
+
+.spread__contribution {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--ink-1);
+  line-height: var(--lh-normal);
+}
+
+.spread__tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.spread__link {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-deep);
+}
+
+@media (max-width: 60rem) {
+  /* One column below the width where two leaves stop being readable. The book
+     underneath is still a spread; the console stops pretending to be one. */
+  .spread {
+    grid-template-columns: 1fr;
+  }
+}
