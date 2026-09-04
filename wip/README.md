@@ -221,8 +221,11 @@ expired before the instruction was executed.
 
 **It draws text, which DESIGN.md 10.3 forbids outright.** Runtime generation
 from tokens satisfies the rule's stated reason (tokenisability) but not its
-wording. Pending a recorded 10.3 amendment; scoped in code to `ms_calendar_face`
-alone, with a comment saying not to copy the pattern elsewhere.
+wording. **Resolved the same day by D26 / DESIGN.md 10.6**, which governs the
+generated case explicitly: object markings permitted, interface chrome still
+forbidden by any means, and nothing meaningful may exist only in the render
+(canvas text is invisible to assistive technology). Scoped in code to
+`ms_calendar_face` alone; a third generated surface needs its own ruling.
 
 **Measured:** bbox 2.100 x 1.412 x 1.424, front at min Y (glTF +Z, facing 0),
 which at the existing `OBJECT_HEIGHT.CALENDAR` of 0.7 gives a bench footprint of

@@ -52,9 +52,10 @@ import { readFonts, readPalette, type Palette } from './palette'
  * bytes, and the pattern restyles itself if a token ever changes.
  *
  * DESIGN.md 10.3 forbids BAKED UI on the grounds that baking makes it
- * un-tokenisable. A generated quadrille satisfies that reason. It is a surface
- * pattern, not UI: no text, no numerals, no HUD marks. Drawing anything with
- * glyphs here would be a different question and needs its own decision.
+ * un-tokenisable. A generated pattern satisfies that reason, and DESIGN.md 10.6
+ * (D26) now governs the generated case explicitly: markings that belong to the
+ * depicted object are permitted, interface chrome is not, by any means. The
+ * quadrille below is the easy case - a surface pattern with no glyphs at all.
  */
 type SurfaceSpec =
   | {
@@ -69,16 +70,21 @@ type SurfaceSpec =
        * A month grid drawn across the whole face: header band, weekday strip,
        * 7x5 cells, and numerals.
        *
-       * THIS ONE DRAWS TEXT, and DESIGN.md 10.3 says "No text ... in the
-       * render". Its stated reason is that baking makes text un-tokenizable,
-       * and drawing from tokens at runtime satisfies that reason - but not the
-       * rule's literal wording. The owner asked for numerals so the object
-       * reads as a calendar rather than a blank card. This needs a recorded
-       * 10.3 amendment; until one exists, treat this as the single deliberate
-       * exception and do not copy the pattern to anything else.
+       * THIS ONE DRAWS TEXT. That is governed by DESIGN.md 10.6 (D26), which
+       * permits markings belonging to the depicted object as a physical thing,
+       * generated at runtime from tokens rather than baked. 10.3 still forbids
+       * the baked case, and forbids interface chrome - HUD marks, focus rings,
+       * plaque type - by ANY means, generated or not. The line is
+       * object-versus-interface.
        *
-       * The numerals are decorative: a generic 30-day month, no year, no real
-       * date implied, so nothing here is an outward factual claim (1.9).
+       * 10.6's binding condition is accessibility: canvas text is invisible to
+       * assistive technology, so nothing meaningful may exist only here. These
+       * numerals qualify because they say nothing a user needs - a generic
+       * 30-day month, no year, no real date, so also not an outward claim
+       * (1.9). Real content on an object must also live in the DOM.
+       *
+       * A third generated surface needs its own recorded ruling, not an appeal
+       * to this one.
        */
       kind: 'calendar'
       line: keyof Palette
@@ -338,9 +344,9 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
     metalness: 0,
     surface: { kind: 'quadrille', line: 'ink3', cell: 0.05 },
   },
-  // The tent calendar's printed face. See the 'calendar' SurfaceSpec comment:
-  // this is the one surface that draws glyphs, and it is pending a recorded
-  // DESIGN.md 10.3 amendment.
+  // The tent calendar's printed face: the one surface that draws glyphs,
+  // permitted by DESIGN.md 10.6 (D26). See the 'calendar' SurfaceSpec comment
+  // for the conditions that come with it.
   ms_calendar_face: {
     color: 'ground2',
     roughness: 0.55,

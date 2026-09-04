@@ -304,7 +304,7 @@ Composition resolves this rather than fighting it: high-frequency geometry belon
 - **Broad object surfaces peak at 245** (raised from 235 by D22). A brightness increase for a hover or active state needs somewhere to go, so a near-white surface leaves it dead. 245 is the top of the 10.1 composite target range rather than a new figure invented for this purpose, so no other measured value in this document has to change to accommodate it.
 - **Baked glow is a white pool on a surface**, ramping about 245 to 255 with a short falloff — the same width as the rim-light band above, starting where a broad surface now tops out. Never an emissive saturated material, never bloom, never a lens flare, and never a lit screen that is not white.
 - **No mint in the render, at all.** `--accent` means "this is active or interactive". Putting hue 150 to 190 in the scenery retires that meaning and turns the accent into decoration, which Section 2.3 forbids in the same sentence that defines it.
-- **No baked UI.** No text, HUD crosshairs, coordinate marks, glow rings, focus rings, or plaque type in the render. All of that is CSS driven by tokens, and baking it makes it un-tokenizable (Invariant 1.6).
+- **No baked UI.** No text, HUD crosshairs, coordinate marks, glow rings, focus rings, or plaque type in the render. All of that is CSS driven by tokens, and baking it makes it un-tokenizable (Invariant 1.6). **Amended by D26: the word that carries this rule is BAKED. A pattern generated at runtime from tokens is not baked and is governed by 10.6 instead. Interface chrome stays forbidden in the render regardless of how it is produced.**
 
 ### 10.4 Model export
 
@@ -328,3 +328,24 @@ Every rule in 10.1 to 10.3 was written assuming a console sits over a *busy* ren
 - **Persists for the whole visit, not a momentary flash.** Once revealed, the overlay stays at full opacity until the user leaves MICROSCOPE. "No bench visible" is a property of being in the state, not just the instant of arrival.
 - **Gated on a real user transition, never on load.** Reduced motion, first paint, and a direct `#microscope` link all land on the ordinary three-quarter framing (10.2's resting quiet-zone measurement, D24) and never see the whiteout. Landing cold on full white with no context for where you are would be more disorienting than the standard treatment, not less.
 - **Scoped to this one moment.** This section does not relax 10.1's clipped-white ceiling, or 10.3's broad-surface ceiling, anywhere else in the render. A future full-white moment elsewhere needs its own brand-designer ruling, not an appeal to this one.
+
+### 10.6 Runtime-generated object surfaces (D26)
+
+Some objects cannot read as what they are without markings on them. A calendar without a month grid is a blank card; a lab notebook without ruling is a stack of paper. 10.3 forbids that outright, and the object then fails the only job it has on the bench, which is to be recognisable at a glance.
+
+The rule 10.3 is protecting is tokenisability, stated in its own text: "baking it makes it un-tokenizable". A pattern drawn at runtime from `three/palette.ts` is not baked. `tokens.css` remains the single source of truth, the pattern restyles itself if a token changes, and the repository ships no image bytes (which D21 also wants). So this section permits the generated case and leaves the baked case exactly as prohibited as it was.
+
+**Permitted.** Patterns and lettering that belong to the depicted object as a physical thing: a notebook's ruling, a calendar's month grid and day numbers, a printed label field. These are part of the object, the way its silhouette is.
+
+**Still forbidden, by any means.** HUD crosshairs, coordinate marks, glow rings, focus rings, plaque type, callouts, and any label that is really interface. Those are CSS, driven by tokens, and interactive. Generating them into a texture instead of baking them would evade 10.3's letter while defeating its purpose.
+
+The distinction is not decorative-versus-functional, it is **object-versus-interface**. If a real person looking at the real object would see the marking printed on it, it belongs to the object. If it exists to tell the *user of this site* something, it is interface and stays in the DOM.
+
+Conditions, all binding:
+
+- **Generated from tokens, never baked.** Colours come from `palette.ts` and type families from `readFonts()`. A hardcoded colour or font stack in a generated surface is the same defect as a raw hex in a component (Invariant 1.6).
+- **Nothing meaningful may exist only in the render.** Canvas text is invisible to assistive technology, unselectable, unsearchable, and untranslatable. Generated lettering must therefore be decorative: the calendar's numerals say nothing a user needs. The moment real content has to appear on an object, it must also exist in the DOM, and Section 3 governs it there. This is the hard limit on this section, and the reason it is not an open licence.
+- **The palette law is unchanged.** No accent hue in a generated surface (D16), and 10.1's luminance law still governs the surface as rendered.
+- **Each surface is a decision, not a precedent.** Two exist: `ms_page` (quadrille ruling, no glyphs) and `ms_calendar_face` (month grid with numerals). A third needs its own ruling, recorded, not an appeal to this section.
+
+**Why the geometric alternative was rejected, measured rather than assumed.** Modelling the grid as raised ribs keeps text out of the render entirely and was the original plan. At the bench camera the calendar stands about 0.7 world units tall, and ribs at a plausible thickness project to roughly 0.6px: present in the file and invisible on screen. That is the same failure the laptop keycaps and the notebook page block each demonstrated before it. A mipmapped texture survives projection at every distance; thin geometry does not.
