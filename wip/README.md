@@ -12,6 +12,7 @@ it is not a candidate asset until it is deliberately promoted.
 | File | What it is | Status |
 | --- | --- | --- |
 | `microscope-lowpoly-preview.jpg` | EEVEE render, for looking at without opening a 3D tool | n/a |
+| `computer-lowpoly-preview.jpg` | EEVEE render of the laptop, same purpose | n/a |
 
 `microscope-lowpoly.glb` **was promoted on 2026-09-03** and now lives at
 `src/assets/models/microscope.glb`. It is in the build. The checklist below is
@@ -97,3 +98,35 @@ Two things this model raised that promotion did not settle, both **resolved
   `DESIGN.md` Section 10.5 for the palette ruling this needed (a full-frame
   whiteout is a genuinely new case Section 10 had not anticipated) and D25
   for the transition it serves.
+
+### 2026-09-04: the laptop, `computer.glb`
+
+Built and promoted the same day, straight to `src/assets/models/computer.glb`,
+without parking a `.glb` here first. The promotion conditions were checkable up
+front this time, because the loader and its material contract already exist: it
+uses five material names already in `MATERIAL_MAP` (`ms_shell`,
+`ms_shell_dark`, `ms_metal`, `ms_slide`, `ms_stage`), carries no mint, was
+authored facing glTF +Z so `OBJECT_FACING.COMPUTER` stays 0, and took the
+filename Invariant 1.3 already declared. Only the preview render is parked here.
+
+**Building it did not touch Invariant 1.7.** The computer is a Phase 2 object,
+but this is an asset, not a view: the hotspot still does not navigate,
+`#computer` still renders the coming-soon plaque, and no console exists. Same
+reasoning as D18 for the Phase 2 content files. The scene already had to
+contain all four objects under Invariant 1.2, so this only replaces one
+placeholder primitive with the model 1.3 was written to accept.
+
+**The keyboard needed two ink tiers, not one.** Keycaps on `ms_knob` (ink-2)
+in a well floored with `ms_stage` (ink-1) rendered as a single slab with
+hairline slits: one tier of separation is not enough at bench scale. Caps moved
+to `ms_shell_dark` (ink-3), two tiers from the well, plus a 0.006 bevel so each
+cap edge catches the key light. A real MacBook's near-black keyboard was never
+available under Invariant 1.1, so the keyboard is the ink tiers inverted:
+light caps in a darker well.
+
+**Not measured, the same gap the microscope had:** its rendered luminance
+against `DESIGN.md` 10.1 and 10.3. The microscope was measured at promotion
+(peak 248, 1.27% over the then-235 ceiling); nothing equivalent has been run
+for this model, and the ceiling has since moved to 245 under D22. The keyboard
+well is the darkest large area on either object, so if anything here fails
+10.1's floor when it sits under a console, that is where to look.
