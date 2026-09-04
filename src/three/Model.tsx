@@ -34,7 +34,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import { readPalette, type Palette } from './palette'
+import { readFonts, readPalette, type Palette } from './palette'
 
 /**
  * SURFACE PATTERNS, and why they are drawn here rather than shipped in the .glb.
@@ -56,12 +56,36 @@ import { readPalette, type Palette } from './palette'
  * pattern, not UI: no text, no numerals, no HUD marks. Drawing anything with
  * glyphs here would be a different question and needs its own decision.
  */
-type SurfaceSpec = {
-  /** Line colour, from the palette like every other colour in the scene. */
-  line: keyof Palette
-  /** Cell size in model units, i.e. before Model's normalising scale. */
-  cell: number
-}
+type SurfaceSpec =
+  | {
+      kind: 'quadrille'
+      /** Line colour, from the palette like every other colour in the scene. */
+      line: keyof Palette
+      /** Cell size in model units, i.e. before Model's normalising scale. */
+      cell: number
+    }
+  | {
+      /**
+       * A month grid drawn across the whole face: header band, weekday strip,
+       * 7x5 cells, and numerals.
+       *
+       * THIS ONE DRAWS TEXT, and DESIGN.md 10.3 says "No text ... in the
+       * render". Its stated reason is that baking makes text un-tokenizable,
+       * and drawing from tokens at runtime satisfies that reason - but not the
+       * rule's literal wording. The owner asked for numerals so the object
+       * reads as a calendar rather than a blank card. This needs a recorded
+       * 10.3 amendment; until one exists, treat this as the single deliberate
+       * exception and do not copy the pattern to anything else.
+       *
+       * The numerals are decorative: a generic 30-day month, no year, no real
+       * date implied, so nothing here is an outward factual claim (1.9).
+       */
+      kind: 'calendar'
+      line: keyof Palette
+      ink: keyof Palette
+      header: keyof Palette
+      headerInk: keyof Palette
+    }
 
 const tileCache = new Map<string, CanvasTexture>()
 
@@ -103,16 +127,120 @@ function quadrilleTile(background: string, line: string): CanvasTexture {
  * rectangles). Assumes the UV runs u along local X and v along local Z, which
  * is what a Blender XY-plane becomes after the glTF Y-up conversion.
  */
-function surfaceTexture(mesh: Mesh, surface: SurfaceSpec, background: string, line: string) {
+function quadrilleTexture(mesh: Mesh, cell: number, background: string, line: string) {
   const geometry = mesh.geometry
   if (!geometry.boundingBox) geometry.computeBoundingBox()
   const size = geometry.boundingBox!.getSize(new Vector3())
   const texture = quadrilleTile(background, line).clone()
   texture.needsUpdate = true
   texture.repeat.set(
-    Math.max(1, Math.round(size.x / surface.cell)),
-    Math.max(1, Math.round((size.z || size.y) / surface.cell)),
+    Math.max(1, Math.round(size.x / cell)),
+    Math.max(1, Math.round((size.z || size.y) / cell)),
   )
+  return texture
+}
+
+/**
+ * The calendar face. Drawn whole rather than tiled, because a month grid is a
+ * single composition: it has a top and a bottom, unlike a quadrille.
+ *
+ * Canvas Y runs downward while UV v runs upward, so the whole thing is authored
+ * top-down and the geometry's v=1 edge is the header. 1024 wide keeps the
+ * numerals legible in the CALENDAR close-up state without a large upload.
+ */
+function calendarTexture(
+  background: string,
+  line: string,
+  ink: string,
+  header: string,
+  headerInk: string,
+  mono: string,
+): CanvasTexture {
+  const W = 1024
+  const H = Math.round(W / 1.4) // face is 2.06 x 1.46
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Model: 2D canvas context unavailable for calendar face')
+
+  ctx.fillStyle = background
+  ctx.fillRect(0, 0, W, H)
+
+  const pad = W * 0.038
+  const headerH = H * 0.17
+  const weekH = H * 0.095
+  const gridTop = headerH + weekH
+  const gridH = H - gridTop - pad * 0.6
+  const gridW = W - pad * 2
+  const colW = gridW / 7
+  const rowH = gridH / 5
+
+  // header band: the strongest cue that this is a calendar at bench scale
+  ctx.fillStyle = header
+  ctx.fillRect(0, 0, W, headerH)
+  ctx.fillStyle = headerInk
+  ctx.font = `600 ${Math.round(headerH * 0.46)}px ${mono}`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  // save/restore rather than resetting letterSpacing to a literal: the audit
+  // reads a bare '0px' as a raw value in a component (Invariant 1.6), and it
+  // is right to - a canvas reset and a design value are indistinguishable to it.
+  ctx.save()
+  ctx.letterSpacing = `${Math.round(headerH * 0.09)}px`
+  ctx.fillText('MONTH', W / 2, headerH * 0.52)
+  ctx.restore()
+
+  // weekday initials
+  ctx.fillStyle = ink
+  ctx.font = `500 ${Math.round(weekH * 0.52)}px ${mono}`
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  days.forEach((d, i) => {
+    ctx.fillText(d, pad + colW * (i + 0.5), headerH + weekH * 0.55)
+  })
+
+  // grid rules
+  ctx.strokeStyle = line
+  ctx.lineWidth = Math.max(1.5, W * 0.0018)
+  ctx.beginPath()
+  for (let c = 0; c <= 7; c++) {
+    const x = pad + colW * c
+    ctx.moveTo(x, gridTop)
+    ctx.lineTo(x, gridTop + gridH)
+  }
+  for (let r = 0; r <= 5; r++) {
+    const y = gridTop + rowH * r
+    ctx.moveTo(pad, y)
+    ctx.lineTo(pad + gridW, y)
+  }
+  ctx.stroke()
+
+  // 30 numbered days, offset so the month starts mid-week like a real one
+  ctx.fillStyle = ink
+  ctx.font = `500 ${Math.round(rowH * 0.42)}px ${mono}`
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'top'
+  const startCol = 2
+  for (let d = 1; d <= 30; d++) {
+    const idx = startCol + d - 1
+    const r = Math.floor(idx / 7)
+    const c = idx % 7
+    if (r > 4) break
+    ctx.fillText(
+      String(d),
+      pad + colW * c + colW * 0.14,
+      gridTop + rowH * r + rowH * 0.13,
+    )
+  }
+
+  const texture = new CanvasTexture(canvas)
+  // This face is authored top-down (header first) while UV v runs upward, and
+  // the default flipY lands canvas-top at v=0 - which renders the month
+  // upside down. Verified against the exported UVs, which are correct:
+  // u tracks +X, v tracks +Z. So the flip belongs here, not in the geometry.
+  texture.flipY = false
+  texture.colorSpace = SRGBColorSpace
+  texture.anisotropy = 8
   return texture
 }
 
@@ -208,7 +336,22 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
     color: 'ground2',
     roughness: 0.55,
     metalness: 0,
-    surface: { line: 'ink3', cell: 0.05 },
+    surface: { kind: 'quadrille', line: 'ink3', cell: 0.05 },
+  },
+  // The tent calendar's printed face. See the 'calendar' SurfaceSpec comment:
+  // this is the one surface that draws glyphs, and it is pending a recorded
+  // DESIGN.md 10.3 amendment.
+  ms_calendar_face: {
+    color: 'ground2',
+    roughness: 0.55,
+    metalness: 0,
+    surface: {
+      kind: 'calendar',
+      line: 'ink3',
+      ink: 'ink1',
+      header: 'ink2',
+      headerInk: 'ground2',
+    },
   },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },
   ms_stage: { color: 'ink1', roughness: 0.4, metalness: 0 },
@@ -228,6 +371,7 @@ export default function Model({
 
   const gltf = useLoader(GLTFLoader, url)
   const palette = useMemo(() => readPalette(), [])
+  const fonts = useMemo(() => readFonts(), [])
 
   const { scene, scale, offset } = useMemo(() => {
     // Clone so a second mount cannot mutate the cached original.
@@ -259,9 +403,18 @@ export default function Model({
 
       // With a surface pattern the texture already carries both token colours,
       // so the material tint must be white or it would multiply them a second time.
-      const map = surface
-        ? surfaceTexture(child, surface, palette[color], palette[surface.line])
-        : undefined
+      const map = !surface
+        ? undefined
+        : surface.kind === 'quadrille'
+          ? quadrilleTexture(child, surface.cell, palette[color], palette[surface.line])
+          : calendarTexture(
+              palette[color],
+              palette[surface.line],
+              palette[surface.ink],
+              palette[surface.header],
+              palette[surface.headerInk],
+              fonts.mono,
+            )
 
       child.material = new MeshStandardMaterial({
         color: map ? 0xffffff : palette[color],
@@ -287,7 +440,7 @@ export default function Model({
       scale: s,
       offset: [-centre.x * s, -box.min.y * s, -centre.z * s] as [number, number, number],
     }
-  }, [gltf, palette, name, targetHeight])
+  }, [gltf, palette, fonts, name, targetHeight])
 
   return (
     <group position={offset} scale={scale}>

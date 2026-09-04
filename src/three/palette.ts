@@ -40,6 +40,23 @@ export interface Palette {
 }
 
 /**
+ * Type families, read the same way and for the same reason.
+ *
+ * Only a surface that draws glyphs needs this (today: the calendar face in
+ * `Model.tsx`). It is here rather than inlined there so a font in the scene
+ * comes from `tokens.css` exactly as a colour does - a hardcoded font stack in
+ * a material would be the same class of defect as a raw hex.
+ */
+export interface Fonts {
+  sans: string
+  mono: string
+}
+
+export function readFonts(): Fonts {
+  return { sans: read('--font-sans'), mono: read('--font-mono') }
+}
+
+/**
  * Read once at mount. Tokens do not change at runtime in this project (there is
  * no theme switch, by law: Invariant 1.1), so re-reading per frame would cost a
  * layout flush for nothing.

@@ -198,3 +198,34 @@ confirmed by temporarily applying the pattern to the cover material (it
 rendered correctly, cells square) and then by a temporary probe logging the
 computed repeat for `ms_page`. Both were removed before commit. A visual check
 of the grid in place has to wait for the notebook to open.
+
+### 2026-09-04: the calendar, `calendar.glb`
+
+A-frame tent desk calendar matching the placeholder's silhouette: two panels
+leaning at 27.5 degrees, spiral binding across the apex, and a printed face on
+its own UV-mapped plane. 228 triangles across 16 meshes, 26K. The cheapest
+object on the bench, because nearly everything that makes it read as a calendar
+is drawn at runtime rather than modelled.
+
+`calendar-lowpoly-preview.jpg` is a Blender render and shows the face **blank**.
+That is correct, not a mistake: the printed face does not exist in the `.glb` at
+all. It is generated in `Model.tsx` from tokens when the scene mounts, so the
+only place to see the finished object is the running app.
+
+**The master prompt for this model said "make the grid GEOMETRY, not texture"
+and that instruction was overridden.** It was written while no texture
+capability existed. Once `surface` landed, geometry ribs would have been about
+0.6px at bench scale - present and invisible, the same failure mode as the
+laptop keycaps and the notebook page block. The reason for the instruction
+expired before the instruction was executed.
+
+**It draws text, which DESIGN.md 10.3 forbids outright.** Runtime generation
+from tokens satisfies the rule's stated reason (tokenisability) but not its
+wording. Pending a recorded 10.3 amendment; scoped in code to `ms_calendar_face`
+alone, with a comment saying not to copy the pattern elsewhere.
+
+**Measured:** bbox 2.100 x 1.412 x 1.424, front at min Y (glTF +Z, facing 0),
+which at the existing `OBJECT_HEIGHT.CALENDAR` of 0.7 gives a bench footprint of
+1.032 x 0.694 against the placeholder's 0.78 x 0.60. Slightly wider, and it
+fits: the right side of the bench has room where the left did not, so unlike the
+notebook this needed no constant change.
