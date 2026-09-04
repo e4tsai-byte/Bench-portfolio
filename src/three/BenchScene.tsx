@@ -23,13 +23,14 @@
  * the composite audit is mandatory for any NEW camera state, because 10.7's
  * legibility pass is a property of where the current consoles happen to sit.
  */
-import { useMemo, type ReactElement } from 'react'
+import { useMemo, useRef, type ReactElement } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import type { Object3D } from 'three'
 import type { BenchObject, BenchState } from '../state/benchMachine'
 import { BENCH_OBJECTS, isWiredThisPhase } from '../state/benchMachine'
 import { readFonts, readPalette, type Fonts, type Palette } from './palette'
-import CameraRig from './CameraRig'
+import CameraRig, { setNotebookPose } from './CameraRig'
 import Model, { applyTokenMaterials, modelUrl } from './Model'
 
 /**
@@ -61,7 +62,14 @@ const OBJECT_HEIGHT: Record<BenchObject, number> = {
  */
 const OBJECT_FACING: Record<BenchObject, number> = {
   MICROSCOPE: Math.PI,
-  NOTEBOOK: 0,
+  // Turned 180 degrees by D28. The hinge pivots are baked into the .glb and
+  // mirror about model x -1.085, so at this scale an opening book sweeps 1.365
+  // world units to the LEFT of its transform: x -3.365, against computer.glb
+  // spanning -3.603 to -2.497. That is 0.868 units of intersection - the
+  // notebook would open straight through the laptop. Turning the object puts
+  // the spread on its +x side, into clear space between it and the microscope,
+  // and costs a constant here rather than a re-export.
+  NOTEBOOK: Math.PI,
   CALENDAR: 0,
   COMPUTER: 0,
 }
@@ -243,10 +251,20 @@ export default function BenchScene({
 }) {
   const palette = useMemo(() => readPalette(), [])
   const fonts = useMemo(() => readFonts(), [])
+  // The notebook's hinge rig, handed up by Model's onReady. CameraRig drives
+  // it on the SAME timeline as the camera (D28): two effects keyed on state
+  // fall out of phase on a fast BENCH->NOTEBOOK->BENCH, and the symptom is a
+  // book that opens after the camera has already left.
+  const notebookRig = useRef<Object3D | null>(null)
 
   return (
     <>
-      <CameraRig state={state} onDiveReveal={onDiveReveal} isUserInitiated={isUserInitiated} />
+      <CameraRig
+        state={state}
+        onDiveReveal={onDiveReveal}
+        isUserInitiated={isUserInitiated}
+        notebookRig={notebookRig}
+      />
 
       {/* High-key rig. Key to fill is roughly 1.8:1 per DESIGN.md 10.3: high-key
           is a low contrast ratio, not merely a bright image. */}
@@ -285,7 +303,26 @@ export default function BenchScene({
               the primitive returns if it is removed. No code change either way. */}
           {modelUrl(MODEL_NAME[object]) ? (
             <group rotation={[0, OBJECT_FACING[object], 0]}>
-              <Model name={MODEL_NAME[object]} targetHeight={OBJECT_HEIGHT[object]} />
+              <Model
+                name={MODEL_NAME[object]}
+                targetHeight={OBJECT_HEIGHT[object]}
+                onReady={
+                  object === 'NOTEBOOK'
+                    ? (scene) => {
+                        notebookRig.current = scene
+                        // Reconcile the pose the moment the rig appears. The
+                        // ref is stable, so populating it does NOT re-run
+                        // CameraRig's state effect: without this, a first
+                        // paint that lands directly in NOTEBOOK while the rig
+                        // is still null leaves a closed book at the notebook
+                        // camera with no later correction. Same class as the
+                        // bug D25 spent a session on, and the reason the pose
+                        // is a function of state rather than of a callback.
+                        setNotebookPose(scene, state === 'NOTEBOOK')
+                      }
+                    : undefined
+                }
+              />
             </group>
           ) : (
             OBJECT_MESH[object](palette)

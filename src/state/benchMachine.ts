@@ -46,7 +46,12 @@ export const BENCH_OBJECTS: readonly BenchObject[] = [
  */
 export const OBJECT_PHASE: Record<BenchObject, 1 | 2> = {
   MICROSCOPE: 1,
-  NOTEBOOK: 2,
+  // Promoted by D28, an owner override of Invariant 1.7 taken while Phase 1
+  // was NOT shipped and live. This wires the hotspot so the opening flip can
+  // actually be looked at; the notebook still has no CONTENT view, so
+  // #notebook lands on the coming-soon plaque. Calendar and computer are
+  // untouched and remain Phase 2.
+  NOTEBOOK: 1,
   CALENDAR: 2,
   COMPUTER: 2,
 }

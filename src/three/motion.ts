@@ -61,3 +61,63 @@ export const MICROSCOPE_DIVE = {
     target: [0.305, 1.228, 0.106] as [number, number, number],
   },
 } as const
+
+/**
+ * NOTEBOOK_OPEN - the notebook's opening flip (D28).
+ *
+ * AXIS. In Blender these hinges rotate about Y. The glTF export maps Blender
+ * +Y to glTF -Z, so in three.js they must be driven about **Z**, not Y.
+ * Driving Y here produces a book that shears instead of opening, and the
+ * numbers below are the ones that survived being checked in the browser
+ * rather than the ones the Blender file suggests. Re-measure by looking if
+ * the model is ever re-exported; do not re-derive on paper.
+ *
+ * The three hinges do not move in lockstep. A real hardcover's spine flattens
+ * as the board swings, at roughly half the angle, and the leaves trail the
+ * cover slightly because paper is not rigid. Both are cheap to express as an
+ * offset on one timeline and both are what stop the motion reading as a
+ * hinged box lid.
+ */
+export const NOTEBOOK_OPEN = {
+  /** Node names as exported. Verified present in notebook.glb. */
+  nodes: {
+    cover: 'NB_Hinge_Front',
+    pages: 'NB_Hinge_Pages',
+    spine: 'NB_Hinge_Spine',
+  },
+  /** Closed is the authored rest pose: every hinge at 0. */
+  closed: { cover: 0, pages: 0, spine: 0 },
+  /**
+   * Open, in radians about Z. Covers and pages swing a full half-turn; the
+   * spine tracks at half angle so it lies flat in the gutter instead of
+   * standing up as a wall between the two halves.
+   */
+  // POSITIVE, and this sign is load-bearing in a way that hides from testing:
+  // +pi and -pi give an IDENTICAL terminal pose for the covers and pages, so
+  // any check of the final rest state passes either way. Only the PATH
+  // differs. At -pi the covers and page block sweep 0.862 world units BELOW
+  // the worktop - straight through the bench - for most of the arc, and the
+  // spine lands inside the back cover's footprint instead of bridging the
+  // gutter at x -1.185..-1.010. Verified by sweeping both signs across the
+  // full arc against every part pair. Check the path, never just the endpoint.
+  open: { cover: Math.PI, pages: Math.PI, spine: Math.PI / 2 },
+  /**
+   * ORDERING RULE, which is kinematics rather than styling:
+   *
+   *   theta_cover >= theta_spine * 2 >= theta_pages, at every instant, both
+   *   directions.
+   *
+   * Pages may never lead the cover - the block physically cannot pass through
+   * the board, and pages leading by 10% drives 0.124 model units of page
+   * stack through it across five part pairs. The spine may never lag the
+   * pages: its job is to bisect, sitting at half the board's angle so it stays
+   * tangent to both, and lagging by as little as 5% puts PageStack_Left
+   * through it.
+   *
+   * This is satisfied with NO magic numbers by giving the covers and spine
+   * `--dur-move` and the pages `--dur-settle`, all starting together. The
+   * pages then trail by construction (a measured 19.0 degree cover-over-pages
+   * lead at peak) because settle is the longer token. Durations stay wholly
+   * token-derived, per Invariant 1.6 and D13.
+   */
+} as const

@@ -21,7 +21,7 @@
  * different scale, or a model whose origin drifted, still drops in without
  * re-tuning the camera states.
  */
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
@@ -437,9 +437,21 @@ export function applyTokenMaterials(
 export default function Model({
   name,
   targetHeight,
+  onReady,
 }: {
   name: string
   targetHeight: number
+  /**
+   * Handed the loaded, token-materialised scene once per clone.
+   *
+   * This exists because a rigged model is useless without a way to reach its
+   * rig: `notebook.glb` carries named hinge nodes (NB_Hinge_Front,
+   * NB_Hinge_Pages, NB_Hinge_Spine) that something has to rotate, and until
+   * D28 nothing could get at them - the clone lived entirely inside this
+   * memo. Deliberately a callback rather than a returned ref, so the consumer
+   * is handed the exact object that is mounted and cannot race the load.
+   */
+  onReady?: (scene: Object3D) => void
 }) {
   const url = modelUrl(name)
   if (!url) throw new Error(`Model: no ${name}.glb in src/assets/models/`)
@@ -447,6 +459,8 @@ export default function Model({
   const gltf = useLoader(GLTFLoader, url)
   const palette = useMemo(() => readPalette(), [])
   const fonts = useMemo(() => readFonts(), [])
+  const onReadyRef = useRef(onReady)
+  onReadyRef.current = onReady
 
   const { scene, scale, offset } = useMemo(() => {
     // Clone so a second mount cannot mutate the cached original.
@@ -466,6 +480,10 @@ export default function Model({
       offset: [-centre.x * s, -box.min.y * s, -centre.z * s] as [number, number, number],
     }
   }, [gltf, palette, fonts, name, targetHeight])
+
+  useEffect(() => {
+    onReadyRef.current?.(scene)
+  }, [scene])
 
   return (
     <group position={offset} scale={scale}>

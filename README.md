@@ -8,7 +8,7 @@
 
 ## Status
 
-**Current phase: Phase 1 (vertical slice), in progress. Stages A through D are done, including the microscope console and the eyepiece-dive arrival; hover-glow, onboarding, and deployment are next.**
+**Current phase: Phase 1 (vertical slice), in progress. Stages A through D are done, including the microscope console and the eyepiece-dive arrival. Hover-glow, onboarding, and deployment are still outstanding, which means Phase 1 is NOT shipped and live - and the notebook's opening flip was nevertheless built ahead of it by owner override, recorded as D28.**
 **Last updated: 2026-09-04.**
 
 Status vocabulary: **Planned** (designed, not built) · **In progress** (being built now) · **Implemented** (built and works) · **Live** (deployed and reachable) · **Placeholder** (stand-in art or data, not final).
@@ -27,7 +27,8 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Research content (`content/research.ts`) | **Implemented** (3 items, real PDAC abstract, citation verified against Crossref) |
 | Phase 2 content (`publications`, `patents`, `timeline`, `aiProjects`) | **Implemented** (data only; the views they feed are still **Planned**) |
 | Owner's 3D models (`assets/models/*.glb`) | **Placeholder** (all four - `microscope`, `computer`, `notebook`, `calendar` - are exploratory low-poly drafts, wired and rendering) |
-| Notebook / Calendar / Computer objects | **Planned** (Phase 2) |
+| Notebook object | **In progress** (opening flip + camera arrival built by override, D28; no content view - `#notebook` still shows the coming-soon plaque) |
+| Calendar / Computer objects | **Planned** (Phase 2, inert, hotspots do not navigate) |
 | Deployment to Vercel | **Planned** |
 | Mobile pass, sound, focus-knob, metric bars | **Planned** (later polish) |
 | Render constraints (`DESIGN.md` Section 10) | **Implemented** (documented, blocking) |
@@ -86,7 +87,7 @@ Stated here rather than buried.
 
 1. **Greenfield.** As of 2026-08-31 the code does not exist yet; only the spec and docs do. The status table above is the source of truth.
 2. **The 3D models are net-new work** and the one asset on the critical path (amended by D20; this was a Spline still-baking pass). Until they exist, the build runs on placeholder primitive geometry at the final transforms, and any placeholder in production is marked Placeholder above.
-3. **Phase 1 wires only the microscope.** The other three objects are intentionally inert (glow plus a "coming soon" plaque) until Phase 2.
+3. **Phase 1 wires the microscope, and now the notebook's arrival only.** The notebook opens when entered and its hotspot navigates (D28, an owner override of Invariant 1.7 taken before Phase 1 was live), but it has no content view: `#notebook` still shows a "coming soon" plaque. The calendar and computer remain intentionally inert until Phase 2.
 4. **Desktop-only for now.** Mobile is a planned reduction, not a Phase 1 deliverable.
 5. **Some decisions can only be settled by looking** (does the fake zoom convince, is the focus-knob worth building). Those are tracked as open questions in `CLAUDE.md` Section 7 and are deliberately not pre-decided.
 
@@ -113,6 +114,17 @@ Newest first. Add a dated entry at the end of every phase or meaningful change, 
 - **`tools/composite-audit.js` adapted for the live canvas**, per the brand-designer review's own spec: samples `.scene__canvas canvas` at 1:1 (no crop math, since the canvas is not `object-fit` cropped like the old baked still), and paints the actual page ground behind the canvas's transparent pixels before blurring, since a naive read of a transparent WebGL buffer reports false-black rather than the composited colour a real viewer sees. Documents that a temporary `preserveDrawingBuffer` flag and a post-settle wait are required before running it, since the live buffer can be blank or stale outside the same tick as a paint.
 - **Verified in-browser, not asserted:** disclosure toggling (via direct DOM interaction, since synchronous reads after a native `.click()` predate React's batched re-render and produce false negatives, a real gotcha worth recording), the DOI link resolves to the Crossref-verified URL and opens in a new tab, `Escape` collapses without changing state or hash, and Tab order is BackToBench then the three cards in array order with no trap.
 - **Two items deliberately deferred, flagged rather than silently skipped:** `frameloop="demand"` (R3F runs a continuous render loop even with the camera at rest; a real but separate performance question) and a Safari-specific check of `backdrop-filter` over a `<canvas>`, which has a known history of being less reliable there than over Chromium.
+
+### 2026-09-04 (D28: the notebook's opening flip)
+
+- **The notebook opens when you enter it.** Clicking it flies the camera in, holds, and the three-hinge rig unfolds the book to a flat spread while the camera watches from outside. Built at the owner's explicit direction over a phase-discipline objection, recorded as **D28**; Invariant 1.7's own text is amended in place rather than left contradicting the repo.
+- **Deliberately not an echo of the eyepiece dive.** An ocular is a thing you put your eye to, so diving in is what looking down one actually does; a book opening is an event performed on an object you watch. Diving here would also have destroyed the `ms_page` quadrille (D26) at the exact moment it finally became visible for the first time - which, per `wip/README.md`, had never been seen in the running app until now.
+- **The rotation sign was wrong first time, and the bug hid from the obvious test.** `+pi` and `-pi` give an *identical terminal pose* for the covers and pages, so the book ended up correctly open either way and any endpoint check passed. Only the path differed: at `-pi` the covers and page block swept **0.862 world units below the worktop**, through the bench, for most of the arc. Caught by specialist review sweeping the full arc rather than by looking at the result. Check the path, never just the endpoint.
+- **Two live defects fixed on the way, neither caused by this work.** `CAMERA_STATES.NOTEBOOK` aimed 0.274 units *above* a book 0.076 units tall, so `#notebook` framed mostly empty worktop - D24's bug class again. And the spread would have opened straight through the laptop: 0.868 world units of intersection, fixed by turning `OBJECT_FACING.NOTEBOOK` 180 degrees so the book opens into clear space, which costs a constant rather than a re-export.
+- **Timing is entirely token-derived.** Covers and spine ride `--dur-move`, pages ride the longer `--dur-settle`, all starting together, so the pages trail *by construction* rather than by a hand-tuned offset. An earlier draft used magic fractions (`move * 0.9`, a 0.08/0.14 stagger); those were Invariant 1.6 / D13 defects and are gone.
+- **Verified, not asserted:** the flip on click; the flat spread with the grid visible; **composite audit PASS with 0 failures in the new NOTEBOOK camera state**, which DESIGN.md 10.7 makes mandatory; a direct `#notebook` link landing already-open with no flip; `prefers-reduced-motion` cutting straight to the open book; and Back-to-Bench closing it so the bench is never left with an open book.
+- **A specialist correction that turned out to be wrong, checked rather than trusted.** Review claimed `computer.glb` measures 0.680 wide (making the collision smaller) and that the laptop floats 0.2875 units above the worktop. Recomputed with node rotations applied: W 3.142, H 2.217, scale 0.3519, world width **1.106**, spanning -3.603 to -2.497, lowest point `Foot_LB` at -0.014. The original figures stand and the laptop does not float; the correction came from a bounding box computed without rotations.
+- **Still not built:** the Notebook content view. The notebook has an arrival, not a destination - `#notebook` lands on the coming-soon plaque. Calendar and computer remain Phase 2 and inert.
 
 ### 2026-09-04 (D27: the bench becomes a real lab bench)
 

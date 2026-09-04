@@ -49,6 +49,8 @@ Enforcer: brand-designer. Every color, radius, spacing, duration, and type value
 
 Enforcer: product-strategist. Phase 1 wires only the microscope. The other three objects glow on hover and show a "coming soon" plaque; they are not wired to a view until their phase. Building Phase 2 objects before Phase 1 is shipped and live is a violation, because the feel questions Phase 1 answers (does the fake zoom convince, does the viewfinder work) must be settled by looking before the pattern is replicated.
 
+**Amended 2026-09-04 (D28), by owner override, with the invariant knowingly unsatisfied.** The NOTEBOOK arrival transition (the opening flip) is built and its hotspot navigates, while Phase 1 was **not** shipped and live: hover-glow, the onboarding hint, and the Vercel deploy were all outstanding. product-strategist ruled this a violation and was overridden in chat. The scope is narrow and the rest of this invariant still binds: **CALENDAR and COMPUTER remain Phase 2, unwired and inert**, and the notebook has an arrival but still **no content view** - `#notebook` renders the coming-soon plaque, not a publications console. See D28.
+
 ### 1.8 Motion respects the user
 
 Enforcer: motion-engineer. `prefers-reduced-motion` cuts straight to the destination still with no zoom or blur animation. Transitions use fast-in, slow-out easing only, no overshoot. Durations come from the motion tokens.
@@ -306,6 +308,25 @@ The lesson for whoever debugs a similar "works on click, fails on load" split in
 - **`bench.glb` does not go through `Model`.** `Model` normalises to a target height and seats a model's BASE at y=0, which is right for an object standing on the bench and wrong for the bench: its WORKTOP defines y=0, because that is the plane the four objects stand on. It loads at scale 1 and position 0 through a small `LabBench` component in `BenchScene.tsx`, and the material application was extracted from `Model` into an exported `applyTokenMaterials` so the bench cannot become a second, unpoliced source of colour (Invariant 1.6).
 
 - **The `BENCH` camera state was reframed**, from `[0, 2.6, 7.2]` / `[0, 0.5, 0]` to `[0, 4.3, 11.6]` / `[0, 0.15, 0]`. The old slab had no vertical extent; the bench runs from a floor at -3.6 to a reagent shelf at +2.75, about 6.4 units, which overflowed a frame only ever built to hold a tabletop. The reagent shelf was also lifted so its lowest rail sits at 1.52 against the microscope's 1.45 height: at the first attempt the rails cut straight across the microscope's head.
+
+### 2026-09-04: D28, the notebook's opening flip, over a phase-discipline objection
+
+- **D28. Invariant 1.7 is overridden for the NOTEBOOK arrival transition, at the owner's explicit direction, with the invariant's stated condition knowingly unmet.** Recorded before the code, per the convention D22, D25, D26 and D27 set, and 1.7's own text is amended in place so the invariant does not sit contradicting the repo.
+
+  **Phase 1 was not shipped and live, and that was verified rather than assumed.** product-strategist checked and found three outstanding items, not the one deployment gap this was first raised as: **hover-glow** (`BenchScene.tsx` has no pointer handlers at all), **the onboarding hint** (`components/OnboardingHint.tsx` and `Hotspot.tsx` are listed in the Section 2 tree but do not exist on disk), and **the Vercel deploy** (`README.md` and `PRODUCT.md` both still say Planned/Outstanding). By the repo's own source of truth, which Invariant 1.9 makes authoritative, Phase 1 is not live.
+
+  **The ruling was that this is a violation, and it was overridden.** The reasoning against is recorded here rather than paraphrased away, because it may well be right: 1.7's trigger is the objective condition "before Phase 1 is shipped and live", not the softer question of whether the microscope's feel has been settled. The eyepiece dive was verified by a developer in a dev server, which is precisely the kind of verification 1.7 says is not the same as looking at the shipped thing - and it was the most-revised piece of Phase 1 work (a wrong StrictMode diagnosis, a `camera.near` bug, a four-path regression). That cost profile is what 1.7 exists to stop you paying twice. Open question 1 also remains open in this section, and its preamble says these questions "need a running Phase 1 to react to".
+
+  **What was accepted.** The owner directed it in chat after being shown the ruling in full. The risk being taken is that the notebook's arrival may need reworking once Phase 1 is actually live and its feel questions are answered against the shipped thing.
+
+  **Exact scope, and the rest of 1.7 still binds.**
+  - Built: the NOTEBOOK arrival timeline (the three-hinge opening flip), a re-derived NOTEBOOK camera state, and `NOTEBOOK` promoted in `OBJECT_PHASE` so its hotspot navigates. Promotion is not incidental: a flip that can only be reached by hash is a flip nobody can look at, because every hash and first-paint path lands already-open by design (see below), so without promotion the override would buy nothing.
+  - **Not built:** the Notebook content view. There is no publications/patents console; `#notebook` still renders the coming-soon plaque. The notebook has an arrival, not a destination.
+  - **Unchanged:** CALENDAR and COMPUTER remain Phase 2, inert, with non-navigating hotspots.
+
+- **Two live defects surfaced while planning this, both pre-existing and neither caused by the flip.** Recording them because they were found by specialist review rather than by the code failing, and would otherwise look like regressions introduced here.
+  - **`CAMERA_STATES.NOTEBOOK` aimed at air.** Its target was `[-2.0, 0.35, 0.35]` while the notebook normalises to 0.076 units tall, so the aim point sat 0.274 units above the book's top face. Confirmed by looking: `#notebook` framed mostly empty worktop. This is D24's bug class again, a target carried over from primitive-era assumptions, and it was wrong before this work started.
+  - **The open spread would have opened straight through the laptop.** The hinges mirror about model x -1.085, so at scale 0.4343 the spread reaches 1.365 world units left of the notebook's transform: x -3.365, against `computer.glb` spanning -3.603 to -2.497. **0.868 units of intersection**, derived twice independently. Fixed by rotating the notebook 180 degrees in `OBJECT_FACING` so the book opens toward +x into clear space, which costs a scene constant rather than a re-export, since the hinge pivots are baked into the `.glb`.
 
 ### Open questions (settle by looking, not by planning)
 
