@@ -102,6 +102,20 @@ export const NOTEBOOK_OPEN = {
   // full arc against every part pair. Check the path, never just the endpoint.
   open: { cover: Math.PI, pages: Math.PI, spine: Math.PI / 2 },
   /**
+   * Leg 1's framing: an outside three-quarter view where the book is watched
+   * opening. The camera holds here through the flip, then pushes to the
+   * reading pose in CAMERA_STATES.NOTEBOOK.
+   *
+   * Two legs, not the microscope's three. D25's middle leg exists to solve a
+   * specific geometric problem - the ocular bore is not coaxial with the
+   * approach chord, so an uncorrected push clips the eyecup - and nothing
+   * here needs flying through anything.
+   */
+  watch: {
+    position: [-1.922, 2.241, 2.173] as [number, number, number],
+    target: [-1.534, 0.019, 0.35] as [number, number, number],
+  },
+  /**
    * ORDERING RULE, which is kinematics rather than styling:
    *
    *   theta_cover >= theta_spine * 2 >= theta_pages, at every instant, both

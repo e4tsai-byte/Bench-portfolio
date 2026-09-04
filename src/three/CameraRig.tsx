@@ -63,15 +63,24 @@ export const CAMERA_STATES: Record<BenchState, CameraState> = {
   // OBJECT_FACING turned 180 degrees the spread opens toward +x, putting its
   // centre 0.466 world units right of the transform: x -1.534. The spread is
   // 1.798 wide, so this sits back far enough to hold it with margin.
-  // Elevation 50 degrees, azimuth -12, distance 2.9, aimed at the OPEN
-  // spread's measured centre (-1.534, 0.019, 0.350). Verified to hold the
-  // whole spread with no overflow at 16:9, 16:10 and 4:3, with the closed book
-  // sitting left of centre so the spread grows rightward into reserved space -
-  // which is why no follow-pan is needed and one camera tween suffices.
+  // The READING pose: near top-down and close enough that the open spread
+  // fills the frame, so the pages become the screen and the text can sit on
+  // them rather than in a card floating above them.
   //
-  // The y of 2.24 is far above the other object states (1.2-1.55) and that is
-  // deliberate: they stand up, a flat book has to be read from above.
-  NOTEBOOK: { position: [-1.922, 2.241, 2.173], target: [-1.534, 0.019, 0.35] },
+  // Not perfectly vertical on purpose. A camera looking straight down its own
+  // up-vector is degenerate, and a few degrees of offset also keeps the book
+  // reading as an object rather than a flat image. Distance ~1.88 against a
+  // spread of 1.798 x 1.15 leaves a hair of margin at 16:10.
+  //
+  // This is the DESTINATION, so reduced motion and a direct #notebook link
+  // land here directly. The outside framing the flip is watched from is
+  // NOTEBOOK_OPEN.watch, an intermediate leg on the animated path only.
+  // Distance ~2.10 puts the spread at roughly 85% of frame width. Filling the
+  // frame EXACTLY was tried first and was wrong: with the page edges, gutter
+  // and quadrille all pushed off-frame the result read as a blank white sheet
+  // rather than as a notebook, which loses the object the whole state is about.
+  // "Fills the screen" wants the edges just inside it, not just outside.
+  NOTEBOOK: { position: [-1.534, 2.08, 0.72], target: [-1.534, 0.02, 0.33] },
   CALENDAR: { position: [2.5, 1.2, 2.2], target: [2.4, 0.55, -0.2] },
   COMPUTER: { position: [-2.95, 1.5, 2.2], target: [-3.05, 0.6, -0.4] },
 }
@@ -287,9 +296,19 @@ export default function CameraRig({
     // visible for the first time.
     if (h) {
       const timeline = gsap.timeline()
+
+      // Entering: two legs. Leg 1 flies to an outside three-quarter framing and
+      // HOLDS while the book opens, so the flip is actually watched. Leg 2 then
+      // pushes in until the spread fills the frame, which is what lets the text
+      // sit on the pages instead of in a card floating over them.
+      //
+      // Leaving reverses the shape but not the easing: never timeline.reverse(),
+      // which turns power3.out into power3.in - slow-in fast-out, an Invariant
+      // 1.8 violation.
+      const leg1 = wantsOpen ? NOTEBOOK_OPEN.watch : { position: next.position, target: next.target }
       timeline
-        .to(camera.position, { ...xyz(next.position), duration: move, ease: EASE.move }, 0)
-        .to(target.current, { ...xyz(next.target), duration: move, ease: EASE.move }, 0)
+        .to(camera.position, { ...xyz(leg1.position), duration: move, ease: EASE.move }, 0)
+        .to(target.current, { ...xyz(leg1.target), duration: move, ease: EASE.move }, 0)
 
       const pose = wantsOpen ? NOTEBOOK_OPEN.open : NOTEBOOK_OPEN.closed
       // Every number here is a token. The covers and spine ride `move` while
@@ -305,6 +324,19 @@ export default function CameraRig({
         .to(h.cover.rotation, { z: pose.cover, duration: boards, ease: EASE.move }, start)
         .to(h.spine.rotation, { z: pose.spine, duration: boards, ease: EASE.move }, start)
         .to(h.pages.rotation, { z: pose.pages, duration: leaves, ease: EASE.move }, start)
+
+      if (wantsOpen) {
+        // Leg 2, once the spread has settled: push in to the reading pose.
+        const push = start + leaves
+        timeline
+          .to(camera.position, { ...xyz(next.position), duration: settle, ease: EASE.move }, push)
+          .to(target.current, { ...xyz(next.target), duration: settle, ease: EASE.move }, push)
+        // Deliberately does NOT call onDiveReveal. That is D25's MICROSCOPE-only
+        // signal, and it drives the --ground-2 whiteout overlay: firing it here
+        // covered the entire notebook with an opaque white sheet, so the spread
+        // rendered correctly underneath and nothing of it could be seen. The
+        // notebook has no whiteout - its arrival ends on the page, not on white.
+      }
       return () => timeline.kill()
     }
 

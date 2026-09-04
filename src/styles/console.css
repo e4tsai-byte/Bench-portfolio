@@ -541,13 +541,21 @@ button.card {
      is fixed, so the panels can be placed once in viewport units. Nothing here
      reads the 3D transform per frame - that registration apparatus is exactly
      what D20 deleted and what 10.6 keeps out of the DOM. */
-  width: min(64vw, 50rem);
-  margin: 26vh auto 0;
+  width: min(74vw, 58rem);
+  margin: 14vh auto 0;
   align-items: start;
 }
 
+/* No frosted card. At the reading pose the camera fills the frame with the
+   open spread, so the PAGE is the ground the text sits on and a panel would
+   be a second surface floating over a perfectly good one - and Section 2.5
+   forbids frost on frost anyway.
+
+   This is also better for legibility than the card was: the page renders near
+   --ground-2 with --ink-3 hairlines, comfortably above 10.1's 203 floor,
+   which the composite audit confirms rather than assumes. */
 .spread__leaf {
-  padding: var(--sp-5);
+  padding: var(--sp-5) var(--sp-6);
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);

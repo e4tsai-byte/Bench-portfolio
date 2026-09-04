@@ -5,7 +5,7 @@
  *
  * LAYOUT, and why it is not what PRODUCT.md 11 specifies. That section asks for
  * "table of contents left / document viewer right". With one publication and
- * four patents an index is a thin use of a whole page, and it adds a selection
+ * three patents an index is a thin use of a whole page, and it adds a selection
  * state the content does not need. The spread already has two pages, so each
  * collection gets one: the layout uses the object instead of floating over it.
  * The deviation is deliberate and recorded in the build log rather than left to
@@ -24,8 +24,12 @@
  * it. Projecting DOM onto the 3D page would also reimport the registration and
  * matrix apparatus D20 deleted.
  *
- * The panels are sized and inset so the gutter, the fore-edges, and the D26
- * quadrille stay visible around them (DESIGN.md 10.2).
+ * SITS ON THE PAGE, not in a card. The NOTEBOOK arrival ends with the camera
+ * close and near top-down, so the open spread fills the frame and the paper
+ * itself is the ground this text sits on. A frosted panel would be a second
+ * surface floating over a perfectly good one, and Section 2.5 forbids frost on
+ * frost regardless. Placement is static: the reading pose does not move, so
+ * nothing here reads a 3D transform per frame.
  */
 import { useEffect, useState } from 'react'
 import { publications } from '../content/publications'
@@ -50,7 +54,7 @@ export default function Notebook() {
 
   return (
     <div className="spread">
-      <section className="spread__leaf panel" aria-labelledby="leaf-publications">
+      <section className="spread__leaf" aria-labelledby="leaf-publications">
         <p className="hud-label" id="leaf-publications">
           publications
         </p>
@@ -112,7 +116,7 @@ export default function Notebook() {
         )}
       </section>
 
-      <section className="spread__leaf panel" aria-labelledby="leaf-patents">
+      <section className="spread__leaf" aria-labelledby="leaf-patents">
         <p className="hud-label" id="leaf-patents">
           patents
         </p>
