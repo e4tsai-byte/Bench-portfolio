@@ -61,9 +61,19 @@ const MODEL_NAME: Record<BenchObject, string> = {
   COMPUTER: 'computer',
 }
 
-/** Object transforms. A real model drops in at the same transform. */
+/**
+ * Object transforms. A real model drops in at the same transform.
+ *
+ * COMPUTER sits at -3.05 rather than the -3.7 the primitive used. The real
+ * `computer.glb` normalises to 1.106 wide against the placeholder's ~1.1, but
+ * the placeholder was a closed wedge and the model is an open laptop, so it
+ * reads much wider; at -3.7 its left edge landed within 0.3 units of the
+ * frustum edge at 16:10 and clipped on anything narrower. Moving it in is the
+ * fix; its camera state below moves by the same delta so the COMPUTER view is
+ * unchanged. See the build log for what this does NOT fix (aspects below 16:10).
+ */
 const OBJECT_TRANSFORM: Record<BenchObject, [number, number, number]> = {
-  COMPUTER: [-3.7, 0, -0.4],
+  COMPUTER: [-3.05, 0, -0.4],
   NOTEBOOK: [-2.0, 0, 0.35],
   MICROSCOPE: [0.2, 0, -0.2],
   CALENDAR: [2.4, 0, -0.2],

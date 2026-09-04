@@ -45,7 +45,7 @@ export const CAMERA_STATES: Record<BenchState, CameraState> = {
   MICROSCOPE: { position: [0.5, 1.55, 1.75], target: [0.2, 1.15, -0.2] },
   NOTEBOOK: { position: [-1.9, 1.25, 2.1], target: [-2.0, 0.35, 0.35] },
   CALENDAR: { position: [2.5, 1.2, 2.2], target: [2.4, 0.55, -0.2] },
-  COMPUTER: { position: [-3.6, 1.5, 2.2], target: [-3.7, 0.6, -0.4] },
+  COMPUTER: { position: [-2.95, 1.5, 2.2], target: [-3.05, 0.6, -0.4] },
 }
 
 export default function CameraRig({
