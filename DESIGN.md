@@ -316,3 +316,15 @@ Composition resolves this rather than fighting it: high-frequency geometry belon
 - **Silhouette over detail.** Hotspots and hover glow read off the silhouette, and each object must stay visually separable from its neighbours in the bench framing.
 
 If the 1.2 fallback is ever taken and stills are captured from this scene, the old export rules reapply: sRGB always (a Display P3 tagged PNG renders more saturated in the browser and no longer matches the tokens beside it), and about 1% dither, because large near-white gradients band visibly in 8-bit and this scene is almost entirely large near-white gradients.
+
+### 10.5 The deliberate whiteout (D25)
+
+Added by D25 for one specific moment: the eyepiece-dive arrival in MICROSCOPE, where the camera ends inside the ocular looking at nothing but the `ms_eye_glow` disc, and the console then sits on that white field with no scene left behind it at all.
+
+Every rule in 10.1 to 10.3 was written assuming a console sits over a *busy* render, text staying legible against varied content. None of them anticipated a frame that is deliberately, entirely white, and one of them (10.1's "clipped pure white, at most 0.5% of pixels") reads as a direct conflict with that moment if applied literally. It is not: that rule protects glow headroom on an otherwise-varied scene, and does not apply once the scene's own job *is* to be the glow. This section is the exception, scoped narrowly, so a future reader does not have to guess whether the conflict is a bug.
+
+- **Mechanism: a real `--ground-2` DOM overlay, cross-dissolving with a neutral emissive on `ms_eye_glow`, never bloom.** Bloom is blocked outright (D16, D22): it produces exactly the coloured halo Section 1 prohibits, and that reasoning does not change just because the target is intentional here. The emissive is `--ground-2` (zero saturation), so it does not trip "never emissive saturated" (10.3): that rule protects the accent's meaning from decoration, not brightness itself.
+- **The overlay is the guaranteed floor, the render is not trusted alone.** Pixel-perfect geometry alignment is not required to hold across every viewport and every future model re-export; the DOM overlay is what actually guarantees the literal white, so a small render discrepancy at the edges never becomes a visible failure.
+- **Persists for the whole visit, not a momentary flash.** Once revealed, the overlay stays at full opacity until the user leaves MICROSCOPE. "No bench visible" is a property of being in the state, not just the instant of arrival.
+- **Gated on a real user transition, never on load.** Reduced motion, first paint, and a direct `#microscope` link all land on the ordinary three-quarter framing (10.2's resting quiet-zone measurement, D24) and never see the whiteout. Landing cold on full white with no context for where you are would be more disorienting than the standard treatment, not less.
+- **Scoped to this one moment.** This section does not relax 10.1's clipped-white ceiling, or 10.3's broad-surface ceiling, anywhere else in the render. A future full-white moment elsewhere needs its own brand-designer ruling, not an appeal to this one.

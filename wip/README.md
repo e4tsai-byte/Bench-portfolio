@@ -74,15 +74,26 @@ addition to `MATERIAL_MAP`, `ms_eye_glow`, took `--ground-2` without a waiver,
 because D16's ceiling (245, since D22) governs *broad* surfaces and this is a
 small disc — the same exemption the lens material already used.
 
-Two things this model raises that promotion did not settle:
+Two things this model raised that promotion did not settle, both **resolved
+2026-09-04 by D25** (`CLAUDE.md` Section 7), the eyepiece-dive transition:
 
 - **No target survives a centred push.** Tested in Blender: a camera aimed
   between the two oculars passes between the tubes at close range and ends on
   the prism housing, both bores diverging out of frame. The model ships
   `Eyepoint_L`, `Eyepoint_R`, and a centred `Eyepoint_Target` as `.glb` nodes;
-  the transition has to pick one side, or fire early. None is wired yet.
+  the transition has to pick one side, or fire early. ~~None is wired yet.~~
+  **Resolved: committed to `Eyepoint_L`**, wired in `three/CameraRig.tsx`'s
+  MICROSCOPE dive timeline (`three/motion.ts` holds the measured keyframes).
+  `Eyepoint_R` and `Eyepoint_Target` remain unused; nothing here rules out
+  using them later, but no current code reads them.
 - **`ms_eye_glow` does not glow.** `Model.tsx` rebuilds every material from
   tokens and drops whatever was baked in Blender, emission included. It
   renders as the brightest flat tier, not a light source. An emissive field on
   `MaterialSpec`, or a light seated at the bore, would be a deliberate
-  decision — not something this promotion did on its own.
+  decision, not something this promotion did on its own. **Resolved: the
+  deliberate decision was made.** `MaterialSpec` gained an optional
+  `emissive`/`emissiveIntensity` pair, and `ms_eye_glow` is the only material
+  using it, neutral `--ground-2` so it carries zero saturation. See
+  `DESIGN.md` Section 10.5 for the palette ruling this needed (a full-frame
+  whiteout is a genuinely new case Section 10 had not anticipated) and D25
+  for the transition it serves.

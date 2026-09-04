@@ -114,7 +114,7 @@ Bench-portfolio/
 - **Onboarding:** on first visit only, show a dismissible hint pointing at the glowing hotspots. Persist dismissal in `localStorage` (key e.g. `bench.onboarded`). (localStorage is fine here: this is a deployed site, not an in-conversation preview.)
 
 **Transition system** (`three/CameraRig.tsx`, GSAP). **Superseded 2026-09-03 by D20**: this was a crossfade plus scale between two stills, and is now a real camera move.
-- Mechanism: **one camera state per bench state**, animated with GSAP. Both the camera position and its look-at target are animated; animating position alone and re-pointing at the end produces a visible snap at the finish.
+- Mechanism: **one camera state per bench state** for every state's resting destination, animated with GSAP. Both the camera position and its look-at target are animated; animating position alone and re-pointing at the end produces a visible snap at the finish. **Amended 2026-09-04 by D25** for MICROSCOPE specifically: a genuine, user-initiated bench-to-microscope transition plays a three-leg timeline (the eyepiece dive) rather than a single tween, ending in a deliberate whiteout (`DESIGN.md` 10.5). The single-camera-state model still governs every other transition, and still governs MICROSCOPE's own resting state (used by reduced motion, first paint, and a direct `#microscope` link, none of which ever see the dive).
 - Easing: fast-in, slow-out (`power3.out`), no overshoot.
 - Duration read from the motion tokens, so a camera move and a CSS hover cannot drift apart.
 - `prefers-reduced-motion` cuts straight to the destination with no travel, and so does the first paint, which is an arrival rather than a transition. Verified in-browser, not assumed.
