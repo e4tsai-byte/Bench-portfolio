@@ -18,7 +18,7 @@ Status vocabulary: **Planned** (designed, not built) · **In progress** (being b
 | Product spec, design system, engineering contract, agent roster | **Implemented** (this repo's `.md` files) |
 | Project scaffold (React + Vite + TypeScript, GSAP) | **Implemented** (toolchain only, no UI) |
 | Design tokens (`styles/tokens.css`) | **Implemented** (verified in-browser) |
-| Bench scene: real-time 3D scene + object selection | **Implemented** (placeholder primitive geometry, awaiting the owner's models) |
+| Bench scene: real-time 3D scene + object selection | **Implemented**; the bench is now real lab furniture (`bench.glb`: worktop, casework, drawer pedestals, reagent shelf) |
 | Hover-glow on objects | **Planned** |
 | State machine + `#hash` deep links + Back-to-Bench | **Implemented** (verified in-browser); onboarding hint still **Planned** |
 | Camera transitions (GSAP), reduced-motion path | **Implemented** (verified in-browser) |
@@ -113,6 +113,16 @@ Newest first. Add a dated entry at the end of every phase or meaningful change, 
 - **`tools/composite-audit.js` adapted for the live canvas**, per the brand-designer review's own spec: samples `.scene__canvas canvas` at 1:1 (no crop math, since the canvas is not `object-fit` cropped like the old baked still), and paints the actual page ground behind the canvas's transparent pixels before blurring, since a naive read of a transparent WebGL buffer reports false-black rather than the composited colour a real viewer sees. Documents that a temporary `preserveDrawingBuffer` flag and a post-settle wait are required before running it, since the live buffer can be blank or stale outside the same tick as a paint.
 - **Verified in-browser, not asserted:** disclosure toggling (via direct DOM interaction, since synchronous reads after a native `.click()` predate React's batched re-render and produce false negatives, a real gotcha worth recording), the DOI link resolves to the Crossref-verified URL and opens in a new tab, `Escape` collapses without changing state or hash, and Tab order is BackToBench then the three cards in array order with no trap.
 - **Two items deliberately deferred, flagged rather than silently skipped:** `frameloop="demand"` (R3F runs a continuous render loop even with the camera at rest; a real but separate performance question) and a Safari-specific check of `backdrop-filter` over a `<canvas>`, which has a known history of being less reliable there than over Chromium.
+
+### 2026-09-04 (D27: the bench becomes a real lab bench)
+
+- **The flat slab is now real lab furniture.** `bench.glb`: a dark epoxy worktop, white casework with end panels and legs, three mobile drawer pedestals on casters, and a reagent shelf with rails and service fixtures. 984 triangles across 62 parts, 102K. Built from an owner-supplied reference photograph.
+- **The dark worktop is a recorded exception to the high-key law, not a reinterpretation of it.** Invariant 1.1 says a dark surface is a defect and DESIGN.md 10.1 sets a 203 luminance floor; the worktop is `--ink-1` and clears neither. Recorded as **D27 / DESIGN.md 10.7** after being put to the owner explicitly with the cost stated.
+- **Measured, because describing a black-topped bench as "high-key" would be exactly the claim Invariant 1.9 exists to stop.** On the live `BENCH` render: minimum 45, mean 178, maximum 252, with **48.8% of opaque pixels below 203**.
+- **What that floor protects was measured separately and holds.** `tools/composite-audit.js` reports the worst pixel under each text element against the live canvas: **PASS, 0 failures** in `BENCH` (9 elements) and `CALENDAR`. The consoles sit over white casework and page ground rather than over the worktop. The blanket floor is broken; the legibility it proxies for is intact - which is the whole justification, and why 10.7 makes the composite audit **mandatory for any new camera state** rather than treating this pass as general.
+- **Only the worktop needed a ruling.** The reference's saturated blue casework became `--ink-2`; the ink family is already hue 213 cool blue-grey, so no second accent hue is introduced and Section 2.3 / D16 stay intact.
+- **`bench.glb` deliberately bypasses `Model`**, which seats a model's base at y=0. The bench's *worktop* defines y=0, since that is the plane the four objects stand on, so it loads at scale 1 through a small `LabBench` component. Material application was extracted into an exported `applyTokenMaterials` so the bench cannot become a second, unpoliced source of colour.
+- **Two composition fixes found by looking.** The reagent shelf's rails cut straight across the microscope's head at the first attempt; the shelf was lifted so its lowest rail (1.52) clears the microscope (1.45). And the `BENCH` camera was reframed from `[0, 2.6, 7.2]` to `[0, 4.3, 11.6]`: the old slab had no vertical extent, while the bench spans about 6.4 units floor-to-shelf and overflowed a frame built only to hold a tabletop.
 
 ### 2026-09-04 (D26: runtime-generated object surfaces)
 

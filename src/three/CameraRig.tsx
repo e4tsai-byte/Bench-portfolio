@@ -41,7 +41,12 @@ const xyz = ([x, y, z]: [number, number, number]) => ({ x, y, z })
  * behind the microscope console).
  */
 export const CAMERA_STATES: Record<BenchState, CameraState> = {
-  BENCH: { position: [0, 2.6, 7.2], target: [0, 0.5, 0] },
+  // Pulled back and raised from [0, 2.6, 7.2] / [0, 0.5, 0] when the flat slab
+  // became a real bench. The slab had no vertical extent; bench.glb runs from
+  // the floor at -3.6 to the reagent shelf at +2.75, about 6.4 units, which
+  // overflowed a frame that only ever had to hold a tabletop. This framing
+  // fits the whole bench and leaves calm space above it for the title.
+  BENCH: { position: [0, 4.3, 11.6], target: [0, 0.15, 0] },
   MICROSCOPE: { position: [0.5, 1.55, 1.75], target: [0.2, 1.15, -0.2] },
   NOTEBOOK: { position: [-1.9, 1.25, 2.1], target: [-2.0, 0.35, 0.35] },
   CALENDAR: { position: [2.5, 1.2, 2.2], target: [2.4, 0.55, -0.2] },

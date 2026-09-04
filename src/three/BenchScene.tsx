@@ -14,15 +14,23 @@
  * palette.ts from tokens.css (Invariant 1.6, extended by D21).
  *
  * LIGHTING. High-key by law (Invariant 1.1): a low key-to-fill ratio, cool
- * white throughout, nothing below 5500K equivalent, and no dark ground
- * anywhere. See DESIGN.md Section 10.
+ * white throughout, nothing below 5500K equivalent. See DESIGN.md Section 10.
+ *
+ * ONE EXCEPTION, and it is deliberate: the bench WORKTOP is --ink-1, a dark
+ * surface, recorded as D27 / DESIGN.md 10.7. This comment used to end "and no
+ * dark ground anywhere", which stopped being true the moment the flat slab
+ * became a real lab bench. Nothing else in the render or the DOM is dark, and
+ * the composite audit is mandatory for any NEW camera state, because 10.7's
+ * legibility pass is a property of where the current consoles happen to sit.
  */
 import { useMemo, type ReactElement } from 'react'
+import { useLoader } from '@react-three/fiber'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { BenchObject, BenchState } from '../state/benchMachine'
 import { BENCH_OBJECTS, isWiredThisPhase } from '../state/benchMachine'
-import { readPalette } from './palette'
+import { readFonts, readPalette, type Fonts, type Palette } from './palette'
 import CameraRig from './CameraRig'
-import Model, { modelUrl } from './Model'
+import Model, { applyTokenMaterials, modelUrl } from './Model'
 
 /**
  * Target height per object, in world units. A model is scaled to this from its
@@ -173,6 +181,52 @@ const OBJECT_MESH: Record<BenchObject, (p: ReturnType<typeof readPalette>) => Re
   COMPUTER: (p) => <Computer color={p.ground2} screen={p.ground2} />,
 }
 
+/**
+ * The lab bench itself.
+ *
+ * Deliberately NOT routed through `Model`: that normalises a model to a target
+ * height and seats its BASE at y=0, which is right for an object standing on the
+ * bench and wrong for the bench. `bench.glb` is authored with its worktop
+ * surface at y=0 - the plane every object stands on - so it loads at scale 1 and
+ * position 0, and the four object transforms keep meaning what they already
+ * meant. Materials still go through the same token bridge (Invariant 1.6).
+ *
+ * If the file is absent the bench falls back to the flat `--ground-1` slab this
+ * replaced, so the scene never renders objects floating over nothing.
+ */
+function LabBench({ palette, fonts }: { palette: Palette; fonts: Fonts }) {
+  const url = modelUrl('bench')
+  if (!url) return <FallbackSlab color={palette.ground1} />
+  return <LoadedBench url={url} palette={palette} fonts={fonts} />
+}
+
+function FallbackSlab({ color }: { color: string }) {
+  return (
+    <mesh position={[0, -0.05, 0]} receiveShadow>
+      <boxGeometry args={[14, 0.1, 5]} />
+      <meshStandardMaterial color={color} roughness={0.62} />
+    </mesh>
+  )
+}
+
+function LoadedBench({
+  url,
+  palette,
+  fonts,
+}: {
+  url: string
+  palette: Palette
+  fonts: Fonts
+}) {
+  const gltf = useLoader(GLTFLoader, url)
+  const scene = useMemo(() => {
+    const cloned = gltf.scene.clone(true)
+    applyTokenMaterials(cloned, palette, fonts, 'bench')
+    return cloned
+  }, [gltf, palette, fonts])
+  return <primitive object={scene} />
+}
+
 export default function BenchScene({
   state,
   onSelect,
@@ -188,6 +242,7 @@ export default function BenchScene({
   isUserInitiated?: boolean
 }) {
   const palette = useMemo(() => readPalette(), [])
+  const fonts = useMemo(() => readFonts(), [])
 
   return (
     <>
@@ -209,11 +264,7 @@ export default function BenchScene({
       {/* Fake bounce off the white bench: the rasteriser gives us none. */}
       <pointLight position={[0, 0.4, 3]} intensity={1.5} color={palette.ground1} />
 
-      {/* Bench slab. */}
-      <mesh position={[0, -0.05, 0]} receiveShadow>
-        <boxGeometry args={[14, 0.1, 5]} />
-        <meshStandardMaterial color={palette.ground1} roughness={0.62} />
-      </mesh>
+      <LabBench palette={palette} fonts={fonts} />
 
       {BENCH_OBJECTS.map((object) => (
         <group

@@ -10,7 +10,7 @@ Read `PRODUCT.md` for what the project is and why. Read `DESIGN.md` for the visu
 
 ### 1.1 High-key only
 
-Enforcer: brand-designer (blocking). There is no dark mode anywhere. No background, console, modal, or overlay may go dark, regardless of which reference inspired it. Contrast is near-black ink on luminous white; "glow" is brighter and whiter with a cold rim, never neon on black. A dark surface is a defect. See `DESIGN.md` Section 1 and Section 7.
+Enforcer: brand-designer (blocking). There is no dark mode anywhere. No background, console, modal, or overlay may go dark, regardless of which reference inspired it. **Amended by D27 (2026-09-04): the bench WORKTOP is a recorded exception, scoped to that one object surface and measured; see DESIGN.md 10.7. Every DOM surface, and every other surface in the render, still obeys this rule absolutely.** Contrast is near-black ink on luminous white; "glow" is brighter and whiter with a cold rim, never neon on black. A dark surface is a defect. See `DESIGN.md` Section 1 and Section 7.
 
 ### 1.2 One real-time scene, with baking retained as a fallback
 
@@ -292,6 +292,20 @@ The lesson for whoever debugs a similar "works on click, fails on load" split in
   **Why the alternative was rejected, measured rather than argued.** Modelling the grid as raised geometry keeps text out of the render entirely and was the original plan, written into the calendar's own build prompt. At the bench camera the calendar stands about 0.7 world units tall, and ribs at any plausible thickness project to roughly 0.6px: in the file, invisible on screen. That is the third time this project has hit the same wall — the laptop keycaps one ink tier from their well, and the notebook's page block at 0.13mm gaps — and the first two were caught only by rendering and looking. A mipmapped texture survives projection at every distance; thin geometry does not.
 
   **Scope.** Two generated surfaces exist: `ms_page` (quadrille ruling, no glyphs, and legal under 10.3 as it already stood since it draws no text) and `ms_calendar_face` (month grid with numerals, which is the case that needed this decision). A third is a new ruling, recorded, not an appeal to this one. brand-designer's blocking authority over Section 10 is unchanged by this entry; the owner directed the change, which is why it is a decision record rather than an inline edit.
+
+### 2026-09-04: D27, the bench becomes a real lab bench
+
+- **D27. The bench worktop is `--ink-1`, a dark surface, which is an exception to Invariant 1.1 and to DESIGN.md 10.1's 203 floor.** The rule itself is recorded as new **DESIGN.md Section 10.7**, per the convention D22, D25 and D26 set. The owner supplied a reference photograph of a real lab bench and chose the dark top explicitly after being shown what it collides with, so this is a directed decision, not an inference.
+
+  **The cost, measured rather than argued.** On the live `BENCH` render the scene now measures minimum 45, mean 178, maximum 252, with **48.8% of opaque pixels below 203**. Nearly half the rendered geometry sits under the floor. That number belongs in the record because the alternative - describing a black-topped bench as "high-key with a darker accent" - would be the kind of claim Invariant 1.9 exists to stop.
+
+  **What the floor protects was measured separately, and holds.** 10.1 exists so console text stays legible over what sits behind it. `tools/composite-audit.js` measures exactly that against the live canvas, worst-pixel not mean, and returns **PASS with 0 failures** in `BENCH` (9 elements) and `CALENDAR`. The consoles sit over white casework and page ground rather than over the worktop. So the blanket floor is broken and the outcome it proxies for is intact - which is the whole justification for permitting this, and also why 10.7 makes the composite audit mandatory for any new camera state rather than treating this pass as general.
+
+  **Only the worktop needed a ruling.** The reference's saturated blue casework is `--ink-2`: the ink family is already hue 213 cool blue-grey, so the blue is reinterpreted inside the existing palette with no second accent hue, leaving Section 2.3 and D16 untouched. That is the reinterpretation DESIGN.md Section 1 already prescribes for dark references, applied to a colour one instead.
+
+- **`bench.glb` does not go through `Model`.** `Model` normalises to a target height and seats a model's BASE at y=0, which is right for an object standing on the bench and wrong for the bench: its WORKTOP defines y=0, because that is the plane the four objects stand on. It loads at scale 1 and position 0 through a small `LabBench` component in `BenchScene.tsx`, and the material application was extracted from `Model` into an exported `applyTokenMaterials` so the bench cannot become a second, unpoliced source of colour (Invariant 1.6).
+
+- **The `BENCH` camera state was reframed**, from `[0, 2.6, 7.2]` / `[0, 0.5, 0]` to `[0, 4.3, 11.6]` / `[0, 0.15, 0]`. The old slab had no vertical extent; the bench runs from a floor at -3.6 to a reagent shelf at +2.75, about 6.4 units, which overflowed a frame only ever built to hold a tabletop. The reagent shelf was also lifted so its lowest rail sits at 1.52 against the microscope's 1.45 height: at the first attempt the rails cut straight across the microscope's head.
 
 ### Open questions (settle by looking, not by planning)
 

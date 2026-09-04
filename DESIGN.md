@@ -349,3 +349,18 @@ Conditions, all binding:
 - **Each surface is a decision, not a precedent.** Two exist: `ms_page` (quadrille ruling, no glyphs) and `ms_calendar_face` (month grid with numerals). A third needs its own ruling, recorded, not an appeal to this section.
 
 **Why the geometric alternative was rejected, measured rather than assumed.** Modelling the grid as raised ribs keeps text out of the render entirely and was the original plan. At the bench camera the calendar stands about 0.7 world units tall, and ribs at a plausible thickness project to roughly 0.6px: present in the file and invisible on screen. That is the same failure the laptop keycaps and the notebook page block each demonstrated before it. A mipmapped texture survives projection at every distance; thin geometry does not.
+
+### 10.7 The bench worktop (D27)
+
+The bench is a real lab bench, and the single most recognisable thing about one is a dark epoxy resin worktop. The owner supplied a reference photograph and chose the dark top explicitly, knowing what it costs. This section records the cost rather than letting the model quietly contradict Section 1.
+
+**This is a genuine exception to the high-key law, not a reinterpretation of it.** Section 1 says a surface that goes dark is a defect, and 10.1 sets a 203 floor. The worktop is `--ink-1` and clears neither. Measured on the live `BENCH` render: minimum 45, mean 178, maximum 252, with **48.8% of opaque pixels below 203**. Stating that plainly is the point of this section.
+
+**What the floor was protecting still holds, and that was measured too.** 10.1 exists so text on a translucent console stays legible over whatever sits behind it. `tools/composite-audit.js` measures that directly, against the live canvas, reporting the worst pixel under each text element. Run against this bench it returns **PASS, 0 failures**, in both `BENCH` (9 elements) and `CALENDAR`. The consoles clear their floors because they sit over the white casework, the floor, and the page ground rather than over the worktop itself, and because `--frost-1` plus its blur lifts what little they do overlap. The blanket floor is violated; the outcome it is a proxy for is not.
+
+Conditions:
+
+- **Scoped to the worktop.** Consoles, cards, plaques, page grounds, and every DOM surface remain high-key absolutely. This section permits one dark object surface in the render; it does not open the door to a dark UI, and Invariant 1.1 is otherwise untouched.
+- **The composite audit becomes mandatory for any new camera state.** The pass above is a property of where the current consoles happen to sit. A future state that puts a console directly over the worktop could fail, and the only way to know is to run the audit in that state. Do not infer from this section that the bench is safe behind consoles generally.
+- **The casework blue is a reinterpretation, not an exception.** The reference's saturated blue drawer fronts are `--ink-2`. The ink family is already hue 213 cool blue-grey, so this introduces no second accent hue and leaves Section 2.3 and D16 fully intact. Only the worktop needed a ruling.
+- **One measured value sits above the ceiling too.** The maximum of 252 is a specular sweep across the worktop, small in area rather than a broad surface, so D22's 245 broad-surface ceiling is not what it tests. Recorded here because it showed up in the same measurement and should not look like an oversight later.

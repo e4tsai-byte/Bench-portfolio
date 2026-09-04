@@ -30,11 +30,12 @@ import {
   Color,
   Mesh,
   MeshStandardMaterial,
+  Object3D,
   RepeatWrapping,
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import { readFonts, readPalette, type Palette } from './palette'
+import { readFonts, readPalette, type Fonts, type Palette } from './palette'
 
 /**
  * SURFACE PATTERNS, and why they are drawn here rather than shipped in the .glb.
@@ -365,6 +366,74 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
 
 const FALLBACK: MaterialSpec = { color: 'ground2', roughness: 0.42, metalness: 0.05 }
 
+/**
+ * Replace every baked material with one built from tokens, by material NAME.
+ *
+ * Exported because the bench needs it too. The bench is not a BenchObject and
+ * must NOT go through Model's height normalisation - its worktop, not its base,
+ * defines y=0 - but it is authored in the same Blender pipeline and must obey
+ * Invariant 1.6 identically. Sharing this is what stops the bench quietly
+ * becoming a second, unpoliced source of colour in the scene.
+ */
+export function applyTokenMaterials(
+  root: Object3D,
+  palette: Palette,
+  fonts: Fonts,
+  label: string,
+): void {
+  const seen = new Set<string>()
+
+  root.traverse((child) => {
+    if (!(child instanceof Mesh)) return
+    child.castShadow = true
+    child.receiveShadow = true
+
+    const sourceName = Array.isArray(child.material)
+      ? child.material[0]?.name
+      : child.material?.name
+    const key = sourceName ?? ''
+    const spec = MATERIAL_MAP[key]
+
+    if (!spec && !seen.has(key)) {
+      seen.add(key)
+      console.warn(
+        `Model "${label}": material "${key}" is not in MATERIAL_MAP, so it is ` +
+          `falling back to the shell token. Add it to Model.tsx or rename it ` +
+          `in the source file (CLAUDE.md Invariant 1.6).`,
+      )
+    }
+
+    const { color, roughness, metalness, emissive, emissiveIntensity, surface } =
+      spec ?? FALLBACK
+
+    // With a surface pattern the texture already carries both token colours,
+    // so the material tint must be white or it would multiply them a second time.
+    const map = !surface
+      ? undefined
+      : surface.kind === 'quadrille'
+        ? quadrilleTexture(child, surface.cell, palette[color], palette[surface.line])
+        : calendarTexture(
+            palette[color],
+            palette[surface.line],
+            palette[surface.ink],
+            palette[surface.header],
+            palette[surface.headerInk],
+            fonts.mono,
+          )
+
+    child.material = new MeshStandardMaterial({
+      color: map ? 0xffffff : palette[color],
+      roughness,
+      metalness,
+      ...(map && { map }),
+      ...(emissive && {
+        emissive: new Color(palette[emissive]),
+        emissiveIntensity: emissiveIntensity ?? 1,
+      }),
+    })
+  })
+}
+
 export default function Model({
   name,
   targetHeight,
@@ -382,57 +451,7 @@ export default function Model({
   const { scene, scale, offset } = useMemo(() => {
     // Clone so a second mount cannot mutate the cached original.
     const cloned = gltf.scene.clone(true)
-    const seen = new Set<string>()
-
-    cloned.traverse((child) => {
-      if (!(child instanceof Mesh)) return
-      child.castShadow = true
-      child.receiveShadow = true
-
-      const sourceName = Array.isArray(child.material)
-        ? child.material[0]?.name
-        : child.material?.name
-      const key = sourceName ?? ''
-      const spec = MATERIAL_MAP[key]
-
-      if (!spec && !seen.has(key)) {
-        seen.add(key)
-        console.warn(
-          `Model "${name}": material "${key}" is not in MATERIAL_MAP, so it is ` +
-            `falling back to the shell token. Add it to Model.tsx or rename it ` +
-            `in the source file (CLAUDE.md Invariant 1.6).`,
-        )
-      }
-
-      const { color, roughness, metalness, emissive, emissiveIntensity, surface } =
-        spec ?? FALLBACK
-
-      // With a surface pattern the texture already carries both token colours,
-      // so the material tint must be white or it would multiply them a second time.
-      const map = !surface
-        ? undefined
-        : surface.kind === 'quadrille'
-          ? quadrilleTexture(child, surface.cell, palette[color], palette[surface.line])
-          : calendarTexture(
-              palette[color],
-              palette[surface.line],
-              palette[surface.ink],
-              palette[surface.header],
-              palette[surface.headerInk],
-              fonts.mono,
-            )
-
-      child.material = new MeshStandardMaterial({
-        color: map ? 0xffffff : palette[color],
-        roughness,
-        metalness,
-        ...(map && { map }),
-        ...(emissive && {
-          emissive: new Color(palette[emissive]),
-          emissiveIntensity: emissiveIntensity ?? 1,
-        }),
-      })
-    })
+    applyTokenMaterials(cloned, palette, fonts, name)
 
     // Seat it: scale to the target height, then sit its base on y=0 and centre
     // it on x and z, all measured from the model rather than assumed.
