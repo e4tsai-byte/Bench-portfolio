@@ -24,8 +24,97 @@
 import { useMemo } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { Box3, Color, Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import {
+  Box3,
+  CanvasTexture,
+  Color,
+  Mesh,
+  MeshStandardMaterial,
+  RepeatWrapping,
+  SRGBColorSpace,
+  Vector3,
+} from 'three'
 import { readPalette, type Palette } from './palette'
+
+/**
+ * SURFACE PATTERNS, and why they are drawn here rather than shipped in the .glb.
+ *
+ * A ruled page needs a pattern, and the obvious way to get one is to bake an
+ * image into the model. That fails twice over. This loader rebuilds every
+ * material from tokens, so a baked map is discarded before it ever renders (the
+ * same way emission was, until D25 added a field for it); and a baked line
+ * colour is un-tokenisable, which is exactly the defect Invariant 1.6 exists to
+ * catch. D21 adds a third reason: image bytes in a .glb are permanent in a
+ * public repo's history.
+ *
+ * So the pattern is generated at runtime into a canvas, using palette colours.
+ * `tokens.css` stays the single source of truth, the repo ships zero image
+ * bytes, and the pattern restyles itself if a token ever changes.
+ *
+ * DESIGN.md 10.3 forbids BAKED UI on the grounds that baking makes it
+ * un-tokenisable. A generated quadrille satisfies that reason. It is a surface
+ * pattern, not UI: no text, no numerals, no HUD marks. Drawing anything with
+ * glyphs here would be a different question and needs its own decision.
+ */
+type SurfaceSpec = {
+  /** Line colour, from the palette like every other colour in the scene. */
+  line: keyof Palette
+  /** Cell size in model units, i.e. before Model's normalising scale. */
+  cell: number
+}
+
+const tileCache = new Map<string, CanvasTexture>()
+
+/**
+ * One cell, tiled. Cheaper and crisper than drawing a whole sheet: 64x64 is
+ * power-of-two so it mipmaps cleanly, which is what stops the grid aliasing
+ * into noise when the object is small on screen.
+ */
+function quadrilleTile(background: string, line: string): CanvasTexture {
+  const key = `${background}|${line}`
+  const cached = tileCache.get(key)
+  if (cached) return cached
+
+  const S = 64
+  const canvas = document.createElement('canvas')
+  canvas.width = S
+  canvas.height = S
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Model: 2D canvas context unavailable for surface pattern')
+  ctx.fillStyle = background
+  ctx.fillRect(0, 0, S, S)
+  // Lines on two edges only; tiling supplies the other two.
+  ctx.fillStyle = line
+  ctx.fillRect(0, 0, S, 2)
+  ctx.fillRect(0, 0, 2, S)
+
+  const texture = new CanvasTexture(canvas)
+  texture.wrapS = RepeatWrapping
+  texture.wrapT = RepeatWrapping
+  texture.colorSpace = SRGBColorSpace
+  texture.anisotropy = 8
+  tileCache.set(key, texture)
+  return texture
+}
+
+/**
+ * Repeat count comes from the mesh's own size, so the cells are square in world
+ * space rather than square in UV space (a 1.91 x 2.48 page would otherwise show
+ * rectangles). Assumes the UV runs u along local X and v along local Z, which
+ * is what a Blender XY-plane becomes after the glTF Y-up conversion.
+ */
+function surfaceTexture(mesh: Mesh, surface: SurfaceSpec, background: string, line: string) {
+  const geometry = mesh.geometry
+  if (!geometry.boundingBox) geometry.computeBoundingBox()
+  const size = geometry.boundingBox!.getSize(new Vector3())
+  const texture = quadrilleTile(background, line).clone()
+  texture.needsUpdate = true
+  texture.repeat.set(
+    Math.max(1, Math.round(size.x / surface.cell)),
+    Math.max(1, Math.round((size.z || size.y) / surface.cell)),
+  )
+  return texture
+}
 
 /**
  * Discovered at build time by Vite. An absent model is not an error: it means
@@ -62,6 +151,12 @@ type MaterialSpec = {
    */
   emissive?: keyof Palette
   emissiveIntensity?: number
+  /**
+   * A generated surface pattern. When present the base colour moves into the
+   * texture (both the paper colour and the line colour are drawn from tokens),
+   * so `color` becomes the pattern's background rather than the material tint.
+   */
+  surface?: SurfaceSpec
 }
 
 const MATERIAL_MAP: Record<string, MaterialSpec> = {
@@ -101,11 +196,20 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
     emissiveIntensity: 0.6,
   },
   ms_knob: { color: 'ink2', roughness: 0.55, metalness: 0 },
-  // The two facing leaves of the notebook's open spread, and the only surfaces
-  // that will carry the quadrille grid once that lands. Deliberately NOT
+  // The two facing leaves of the notebook's open spread. Deliberately NOT
   // ms_slide: the microscope's specimen slide shares that name, and a grid on
-  // it would be a defect. Plain ground-2 until the grid is built.
-  ms_page: { color: 'ground2', roughness: 0.55, metalness: 0 },
+  // it would be a defect.
+  //
+  // 5mm quadrille at the notebook's authored scale (1 unit = 100mm), which is
+  // the standard ruling for a bound lab notebook. --ink-3 is the hairline tier,
+  // the same token every divider in the CSS uses, so the ruling reads as a
+  // hairline rather than as text.
+  ms_page: {
+    color: 'ground2',
+    roughness: 0.55,
+    metalness: 0,
+    surface: { line: 'ink3', cell: 0.05 },
+  },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },
   ms_stage: { color: 'ink1', roughness: 0.4, metalness: 0 },
 }
@@ -150,11 +254,20 @@ export default function Model({
         )
       }
 
-      const { color, roughness, metalness, emissive, emissiveIntensity } = spec ?? FALLBACK
+      const { color, roughness, metalness, emissive, emissiveIntensity, surface } =
+        spec ?? FALLBACK
+
+      // With a surface pattern the texture already carries both token colours,
+      // so the material tint must be white or it would multiply them a second time.
+      const map = surface
+        ? surfaceTexture(child, surface, palette[color], palette[surface.line])
+        : undefined
+
       child.material = new MeshStandardMaterial({
-        color: palette[color],
+        color: map ? 0xffffff : palette[color],
         roughness,
         metalness,
+        ...(map && { map }),
         ...(emissive && {
           emissive: new Color(palette[emissive]),
           emissiveIntensity: emissiveIntensity ?? 1,

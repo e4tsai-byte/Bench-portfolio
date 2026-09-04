@@ -167,3 +167,34 @@ riding the cover would have flipped it away with the left half.
 **Not measured, same standing gap as the other two models:** rendered luminance
 against `DESIGN.md` 10.1 and 10.3. The ink-2 cover is a large mid-dark area and
 is the most likely thing here to matter when a console sits over it.
+
+### 2026-09-04: the notebook's quadrille grid, generated not baked
+
+`Model.tsx` gained an optional `surface` field on `MaterialSpec`, the third
+capability added to the loader after `emissive` (D25). `ms_page` is its only
+user today: a 5mm quadrille in `--ink-3` on `--ground-2`.
+
+The pattern is a 64x64 single-cell tile drawn into a canvas from palette
+colours, tiled with `RepeatWrapping`. Repeat is derived per mesh from the
+geometry's own bounding box, so cells are square in WORLD space rather than in
+UV space - a 1.91 x 2.48 page mapped 0-1 would otherwise show rectangles.
+Measured on the real leaves: repeat 38 x 50, giving cells of 0.0503 x 0.0496.
+
+Generated rather than baked for three reasons, in descending weight: this loader
+rebuilds every material from tokens and discards baked maps, so a baked grid
+would ship and render as nothing; a baked line colour is un-tokenisable, which
+is the defect Invariant 1.6 exists to catch; and D21 keeps image bytes out of a
+public repo's permanent history.
+
+**On DESIGN.md 10.3.** The rule forbids baked UI because baking makes it
+un-tokenisable. A generated quadrille satisfies that reason, and it is a surface
+pattern rather than UI: no text, no numerals, no HUD marks. Drawing glyphs this
+way would be a different question and is deliberately not settled here.
+
+**Verified indirectly, and worth stating.** The notebook ships closed and its
+rig is unwired, so the spread leaves are not visible in any current camera
+state - the grid cannot be seen in the running app yet. The pipeline was
+confirmed by temporarily applying the pattern to the cover material (it
+rendered correctly, cells square) and then by a temporary probe logging the
+computed repeat for `ms_page`. Both were removed before commit. A visual check
+of the grid in place has to wait for the notebook to open.
