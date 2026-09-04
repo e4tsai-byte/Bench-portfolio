@@ -101,6 +101,11 @@ const MATERIAL_MAP: Record<string, MaterialSpec> = {
     emissiveIntensity: 0.6,
   },
   ms_knob: { color: 'ink2', roughness: 0.55, metalness: 0 },
+  // The two facing leaves of the notebook's open spread, and the only surfaces
+  // that will carry the quadrille grid once that lands. Deliberately NOT
+  // ms_slide: the microscope's specimen slide shares that name, and a grid on
+  // it would be a defect. Plain ground-2 until the grid is built.
+  ms_page: { color: 'ground2', roughness: 0.55, metalness: 0 },
   ms_slide: { color: 'ground2', roughness: 0.15, metalness: 0 },
   ms_stage: { color: 'ink1', roughness: 0.4, metalness: 0 },
 }

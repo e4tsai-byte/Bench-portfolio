@@ -130,3 +130,40 @@ against `DESIGN.md` 10.1 and 10.3. The microscope was measured at promotion
 for this model, and the ceiling has since moved to 245 under D22. The keyboard
 well is the darkest large area on either object, so if anything here fails
 10.1's floor when it sits under a console, that is where to look.
+
+### 2026-09-04: the notebook, `notebook.glb`
+
+Sewn hardcover lab notebook, exported closed, rigged to open flat. 624
+triangles across 16 meshes, 43K. Built from a written spec compiled out of a
+three-round requirements interview rather than from a prose description, at the
+owner's instruction.
+
+Twelve decisions were settled before any geometry existed. Two changed the
+design outright: the cover title became a **blank recessed label panel**
+because `DESIGN.md` 10.3 forbids text in a render, and the ruled pages became a
+**runtime-generated grid** rather than a baked texture, because `Model.tsx`
+discards texture maps the same way it discarded emission before D25.
+
+**The single-hinge rig in the spec was wrong.** Covers have to swing on a wider
+radius than pages, or the flattened spine has nowhere to lie. With one pivot
+the spine stayed vertical through the open pose and read as a wall down the
+middle of the spread. Three pivots now: `NB_Hinge_Front` (-1.085, covers),
+`NB_Hinge_Pages` (-0.985, page halves), `NB_Hinge_Spine` (-1.010, spine at half
+angle). Driven to -180/-180/-90 the spread lands flat, both leaves level at
+z 0.0872, lowest point exactly 0.
+
+**The page block took two attempts.** Ten leaves per half at 0.13mm gaps
+rendered as a solid white band. Eight thicker leaves with irregular fore-edge
+insets read as stacked sheets. Same lesson as the laptop's keycaps: at bench
+scale, separation must be coarse enough to survive projection.
+
+**`ms_page` exists so the grid has somewhere to land that is not `ms_slide`,**
+which the microscope's specimen slide uses.
+
+**Deviation, recorded:** the ribbon is static, not parented to the cover hinge
+as the spec said. A bookmark is anchored at the spine and lies on the page;
+riding the cover would have flipped it away with the left half.
+
+**Not measured, same standing gap as the other two models:** rendered luminance
+against `DESIGN.md` 10.1 and 10.3. The ink-2 cover is a large mid-dark area and
+is the most likely thing here to matter when a console sits over it.

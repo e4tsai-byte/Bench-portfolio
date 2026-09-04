@@ -31,7 +31,12 @@ import Model, { modelUrl } from './Model'
  */
 const OBJECT_HEIGHT: Record<BenchObject, number> = {
   MICROSCOPE: 1.45,
-  NOTEBOOK: 0.12,
+  // 0.076, not the 0.12 the primitive used. Normalisation is by HEIGHT, and a
+  // notebook is thin, so a correctly proportioned one (1.995 x 2.640 x 0.175)
+  // blows up to 1.37 x 1.81 on the bench at 0.12 - nearly double the
+  // placeholder's 0.78 x 1.05, on the already-crowded left side. 0.076 puts it
+  // at 0.87 x 1.15. Real proportions kept; the constant moved instead.
+  NOTEBOOK: 0.076,
   CALENDAR: 0.7,
   COMPUTER: 0.78,
 }
